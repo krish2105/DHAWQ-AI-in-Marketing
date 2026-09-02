@@ -166,6 +166,13 @@ dhawq/
 │   ├── rag/
 │   │   ├── router.py  graph_index.py  hybrid.py  rerank.py
 │   │   ├── untrusted.py  citations.py
+│   │   └── corpora/                            # corpora live WITH the code that
+│   │       ├── policy/                         # reads them, not at repo root
+│   │       │   ├── policy.yaml                 # source of truth (D1.5)
+│   │       │   ├── schema.py  render.py        # typed + generated
+│   │       │   ├── POLICY.md                   # GENERATED — loads whole (§8.2)
+│   │       │   └── manifest.json               # GENERATED — size vs threshold
+│   │       └── external/<crawl_date>/          # corpus D, pinned, immutable
 │   ├── evaluate/
 │   │   ├── ranking.py  beyond_accuracy.py  bias.py  coldstart.py
 │   │   ├── agent_eval.py  rag_eval.py  calibration.py
@@ -186,9 +193,6 @@ dhawq/
 │   ├── 06_train_attr_classifier.py
 │   ├── 07_crawl_corpus_d.py
 │   └── manifests/                              # every pipeline writes one
-├── corpora/                                    # ADDED
-│   ├── C_policy/                               # hand-authored merchandising policy
-│   └── D_snapshot/<crawl_date>/                # pinned, immutable
 ├── eval/
 │   ├── golden/briefs_v1.yaml                   # + composition header
 │   ├── redteam/injections_v1.yaml
@@ -203,6 +207,14 @@ dhawq/
 ├── .github/workflows/ci.yml                    # ADDED — the five gates
 └── data/                                       # gitignored
 ```
+
+**Corpus location — revised at D1.5.** An earlier draft of this plan put the
+corpora at repo root (`corpora/C_policy/`). They now live under
+`services/api/rag/corpora/`, beside the code that reads them. Corpus C is not
+inert data — it ships with a Pydantic schema, a generator and integrity checks,
+and it is imported by the critic and the slot optimiser. Filing it at repo root
+would have separated a module from its own tests and made the import direction
+below harder to enforce.
 
 **Two structural rules that keep §4's permission boundary real:**
 
