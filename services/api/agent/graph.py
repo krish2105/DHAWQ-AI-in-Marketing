@@ -32,11 +32,12 @@ from typing import Any, Literal
 
 from services.api.agent.critic import MAX_ROUNDS, CriticView, critique
 from services.api.agent.state import (
-    Budget, BudgetExhausted, Claim, Confidence, Evidence, GateReason, GateRequest,
-    GateResolution, MerchandisingRun, Phase, Rejection, RunError, Slate,
-    SlotAssignment, SubTask, ToolCall,
+    Budget, BudgetExhausted, Claim, Confidence, Evidence, Finding, GateReason,
+    GateRequest, GateResolution, MerchandisingRun, Phase, Rejection, RunError,
+    Slate, SlotAssignment, SubTask, ToolCall,
 )
 from services.api.agent.tools import catalogue, invoke
+from services.api.agent.triage import triage
 from services.api.core.rbac import Role, Scope, effective_scopes
 
 LOW_CONFIDENCE_THRESHOLD = 0.55
@@ -76,6 +77,45 @@ def supervisor(run: MerchandisingRun) -> MerchandisingRun:
         run.phase = Phase.FAILED
         run.errors.append(RunError(kind="budget", detail=str(exc), node="supervisor"))
         return run
+
+    # TRIAGE FIRST. "Knowing when the system should refuse is harder and more
+    # valuable than making it capable" (§7.7). Before this existed the agent
+    # built a slate for every brief including the ones whose correct answer was
+    # a refusal — 33/60 on the golden set.
+    if run.triage_verdict is None:
+        t = triage(run.goal)
+        run.triage_verdict = t.verdict
+        run.triage_reasons = list(t.reasons)
+        run.triage_rule_ids = list(t.rule_ids)
+
+        if t.detected_injection:
+            run.injections_detected.append(Finding(
+                kind="injection", detail="instruction-like text in the brief itself",
+                pattern="brief_triage"))
+
+        if t.blocks:
+            for rule_id, reason in zip(
+                list(t.rule_ids) + [None] * len(t.reasons), t.reasons
+            ):
+                run.rejections.append(Rejection(
+                    slate_id=None, stage="triage",
+                    criterion=9 if t.verdict == "refuse" else 3,
+                    rule_id=rule_id, evaluated_by="code",
+                    reason=f"[triage/{t.verdict}] {reason}",
+                ))
+            if t.verdict == "escalate":
+                run.pending_gate = GateRequest(
+                    gate_id=f"gt_{uuid.uuid4().hex[:8]}",
+                    reason=GateReason.POLICY_OVERRIDE,
+                    summary="Brief conflicts with merchandising policy: "
+                            + "; ".join(t.reasons),
+                    rule_ids=list(t.rule_ids),
+                    required_scope=Scope.POLICY_OVERRIDE,
+                )
+                run.phase = Phase.GATED
+            else:
+                run.phase = Phase.DONE
+            return run
 
     if not run.plan:
         run.plan = [
@@ -164,6 +204,15 @@ def analyst(run: MerchandisingRun) -> MerchandisingRun:
 
 def merchandiser(run: MerchandisingRun, k: int = 12) -> MerchandisingRun:
     run.phase = Phase.MERCHANDISING
+    if not (_may_call(run, "recommend") and _may_call(run, "optimise_slots")):
+        run.errors.append(RunError(
+            kind="scope_skipped", node="merchandiser",
+            detail="slate tools not in granted scopes for this brief — skipped"))
+        for t in run.plan:
+            if t.assigned_to == "merchandiser":
+                t.done = True
+        return run
+
     recs = _run_tool(run, "recommend", {"k": 120})
     if recs is None:
         for t in run.plan:

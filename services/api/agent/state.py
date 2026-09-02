@@ -221,6 +221,14 @@ class Rejection(BaseModel):
     rule_id: str | None = None
     reason: str
     evaluated_by: Literal["code", "model"]
+    #: WHERE the rejection came from, and it changes what it means.
+    #: `triage`  — the brief was declined BEFORE any tool ran. A prevented
+    #:             violation. The system working.
+    #: `critic`  — a slate or claim was rejected after the fact.
+    #: scope_violation_rate counts ATTEMPTS, so it must count only `critic`
+    #: criterion-9 rejections. Counting triage refusals there scored correct
+    #: refusals as security failures and drove the gate to 0.267.
+    stage: Literal["triage", "critic"] = "critic"
     round: int = 1
     rejected_at: datetime = Field(default_factory=_utcnow)
 
@@ -358,6 +366,13 @@ class MerchandisingRun(BaseModel):
     lineage: dict[str, list[str]] = Field(default_factory=dict)
 
     phase: Phase = Phase.PLANNING
+    #: The supervisor's first act: should this brief be answered at all?
+    #: Recorded so the console can render WHY a run refused, and so the
+    #: escalation-precision metric can distinguish a correct refusal from a
+    #: crash.
+    triage_verdict: Literal["proceed", "refuse", "escalate", "unknown"] | None = None
+    triage_reasons: list[str] = Field(default_factory=list)
+    triage_rule_ids: list[str] = Field(default_factory=list)
     plan: list[SubTask] = Field(default_factory=list)
     critic_rounds: int = 0
     pending_gate: GateRequest | None = None
