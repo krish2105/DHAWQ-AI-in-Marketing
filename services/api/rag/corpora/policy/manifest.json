@@ -1,0 +1,47 @@
+{
+  "corpus": "C",
+  "name": "merchandising_policy",
+  "policy_version": "1.0.0",
+  "generated_on": "2026-09-03",
+  "source": "policy.yaml",
+  "source_sha256": "3a8c54979f6772bf687b948fb34c485f252ea2fc83a3e38fc8514dcc276b5724",
+  "rendered_sha256": "ccccf69e7a786bb649d3316ce550ec2a8cbfcd29d2f865495f9d1222ffa00365",
+  "counts": {
+    "sections": 10,
+    "rules": 49,
+    "rules_by_severity": {
+      "hard": 35,
+      "escalate": 7,
+      "soft": 6,
+      "advisory": 1
+    },
+    "rules_by_criterion": {
+      "1": 1,
+      "3": 5,
+      "4": 6,
+      "5": 7,
+      "6": 5,
+      "8": 2,
+      "9": 3
+    },
+    "unsettled_thresholds": 21
+  },
+  "size": {
+    "chars": 44214,
+    "words": 6791,
+    "estimated_pages": 15.1,
+    "estimated_tokens": 11053,
+    "estimation_method": "chars // 4 \u2014 replace with messages.count_tokens at D9"
+  },
+  "retrieval": {
+    "strategy": "load_whole_into_context",
+    "chunked": false,
+    "indexed": false,
+    "rationale_ref": "ARCHITECTURE.md \u00a78.2",
+    "graduation_threshold": {
+      "max_tokens": 200000,
+      "max_pages": 500
+    },
+    "within_threshold": true
+  }
+}
