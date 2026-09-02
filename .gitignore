@@ -8,3 +8,9 @@ __pycache__/
 .DS_Store
 node_modules/
 .next/
+apps/web/.next/
+apps/web/node_modules/
+apps/web/public/static/*.webp
+apps/web/public/static/*.bin
+apps/web/public/static/meta.json
+apps/web/tsconfig.tsbuildinfo

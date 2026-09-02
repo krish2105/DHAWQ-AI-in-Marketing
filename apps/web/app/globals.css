@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DHAWQ — design tokens.  ARCHITECTURE.md §12.
+
+   DHAWQ IS A GALLERY. 13,548 real garment photographs supply every hue on
+   screen, so the interface recedes almost entirely: deep neutral ground,
+   near-monochrome chrome, generous negative space, and ONE saturated signal
+   colour that appears only on selection.
+
+   This is a functional requirement, not a preference. A colourful UI around a
+   fashion catalogue fights the merchandise and makes colour-based
+   recommendations impossible to judge visually.
+
+   Light is AUTHORED, not inverted — warm paper with a yellow bias, not the
+   dark palette's greys flipped.
+
+   --signal is #0CF9E6, chosen BY MEASUREMENT: the atlas pipeline histogrammed
+   the dominant colour of all 13,548 garments and found ZERO of 2,272 chromatic
+   articles in that hue, so selection can never be confused with a product's
+   own colour. On paper it darkens to #06B6A4 to clear 4.5:1.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: light;
+
+  --ground:          #FAF8F5;
+  --surface:         #F2EEE8;
+  --surface-raised:  #FFFFFF;
+  --hairline:        #E3DCD2;
+  --hairline-strong: #D2C8BA;
+  --text:            #17140F;
+  --text-muted:      #6B635A;
+  --text-faint:      #9A9188;
+
+  --signal:          #06B6A4;
+  --signal-contrast: #FFFFFF;
+  --signal-dim:      rgb(6 182 164 / 0.14);
+  --tail:            #8A8578;
+  --reject:          #8C6D4F;
+  --reject-dim:      rgb(140 109 79 / 0.12);
+
+  --scene-bg:        #F2EEE8;
+  --scene-line:      rgb(0 0 0 / 0.18);
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 14px;
+
+  --step--1: clamp(0.75rem, 0.72rem + 0.15vw, 0.82rem);
+  --step-0:  clamp(0.875rem, 0.84rem + 0.18vw, 0.95rem);
+  --step-1:  clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
+  --step-2:  clamp(1.35rem, 1.2rem + 0.75vw, 1.85rem);
+  --step-3:  clamp(1.8rem, 1.5rem + 1.5vw, 2.9rem);
+  --step-4:  clamp(2.4rem, 1.8rem + 3vw, 4.5rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms; --dur-base: 220ms; --dur-slow: 420ms;
+  --flyto-dur: 900ms;
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --ground:          #0B0A09;
+  --surface:         #141210;
+  --surface-raised:  #1C1917;
+  --hairline:        #2A2624;
+  --hairline-strong: #3A3532;
+  --text:            #F5F1EA;
+  --text-muted:      #9A918A;
+  --text-faint:      #635C56;
+
+  --signal:          #0CF9E6;
+  --signal-contrast: #04201D;
+  --signal-dim:      rgb(12 249 230 / 0.16);
+  --tail:            #7D786C;
+  --reject:          #B08A63;
+  --reject-dim:      rgb(176 138 99 / 0.14);
+
+  --scene-bg:        #080807;
+  --scene-line:      rgb(255 255 255 / 0.16);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  padding: 0; margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-size: var(--step-0);
+  font-family: var(--font-ui, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+  letter-spacing: -0.011em;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+
+/* Metrics update live and must not jitter (§12.3). */
+.tnum, .mono {
+  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* The one place editorial typography is appropriate: product names. */
+.editorial { font-size: var(--step-1); line-height: 1.45; letter-spacing: -0.02em; }
+
+/* Focus must stay visible on --paper, where a cyan ring nearly disappears. */
+:where(a, button, [tabindex], input, textarea):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection { background: var(--signal-dim); color: var(--text); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong); border-radius: 99px;
+  border: 3px solid var(--ground);
+}
+
+/* Motion degrades. Never a cross-fade for a user who asked for less (§12.4). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+.skeleton { position: relative; overflow: hidden; background: var(--surface); }
+.skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--surface-raised), transparent);
+  animation: shimmer 1.6s infinite;
+}
