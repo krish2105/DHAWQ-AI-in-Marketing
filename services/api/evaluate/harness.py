@@ -159,8 +159,15 @@ def run(per_bucket: int = SAMPLE_PER_BUCKET, seed: int = SEED,
                 "concentration_curve": B.concentration_curve(all_slates, cat),
             },
             "cold_articles": {
-                "handled_by_arm": arm.handles_cold_articles,
+                "can_score": arm.can_score_cold_articles,
                 "impressions_on_cold_articles": cold_hits,
+                "surfacing_rate": round(cold_hits / max(len(customers) * TOP_K, 1), 5),
+                "note": (
+                    "can_score is structural; impressions are measured. The "
+                    "weighted hybrid scores cold articles finitely and still "
+                    "surfaces none — blended items cluster near 1.0 while a "
+                    "single-arm item with a neutral prior caps near 0.70."
+                ),
             },
             "timing": {"fit_seconds": round(fit_s, 2),
                        "recommend_seconds": round(rec_s, 2),

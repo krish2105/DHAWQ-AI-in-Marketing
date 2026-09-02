@@ -1,0 +1,143 @@
+{
+  "pipeline": "atlas_v1",
+  "generated_at": "2026-09-03T01:49:23+05:30",
+  "git_rev": "68bf72c",
+  "python": "3.13.5",
+  "canonical_order": "sorted(article_id) \u2014 identical to embeddings and positions",
+  "index_invariant": "atlas tile i, colours.bin row i, positions.bin point i and article_ids.json[i] are the SAME article. Asserted in tests.",
+  "variants": {
+    "desktop": {
+      "variant": "desktop",
+      "tile_px": 64,
+      "sheet_px": 4096,
+      "tiles_per_sheet": 4096,
+      "tiles_per_side": 64,
+      "n_instances": 13548,
+      "n_sheets": 4,
+      "missing": 0,
+      "sheets": [
+        {
+          "file": "atlas_desktop_0.webp",
+          "bytes": 2487066,
+          "sha256": "00213fd2cf58bf9c94090bb7b6f0f8848c6c01d23e5ec783e2288f6eadee988f"
+        },
+        {
+          "file": "atlas_desktop_1.webp",
+          "bytes": 2525156,
+          "sha256": "b7e37e2f7856ac5e0f3655df278c8c5193121934d0d60c46f9d3ed1fd54a4697"
+        },
+        {
+          "file": "atlas_desktop_2.webp",
+          "bytes": 2542728,
+          "sha256": "c4d69d2bc2c5eedf758873e9e94d5349d65966961de38e99d27612c2bf339959"
+        },
+        {
+          "file": "atlas_desktop_3.webp",
+          "bytes": 754156,
+          "sha256": "ba2c019f18c9c860b947b723836232314ff78ac259857629d0898c634ad72626"
+        }
+      ],
+      "colours_bin": {
+        "file": "colours_desktop.bin",
+        "dtype": "uint8",
+        "shape": [
+          13548,
+          3
+        ],
+        "sha256": "8480c7a508abe166d8863280f098848feba3b56cbfa4766b6ef4541737f5ec1d"
+      },
+      "uv_rule": "layer = i // tiles_per_sheet; within = i % tiles_per_sheet; u = (within % tiles_per_side) / tiles_per_side; v = (within // tiles_per_side) / tiles_per_side"
+    },
+    "mobile": {
+      "variant": "mobile",
+      "tile_px": 32,
+      "sheet_px": 4096,
+      "tiles_per_sheet": 16384,
+      "tiles_per_side": 128,
+      "n_instances": 3000,
+      "n_sheets": 1,
+      "missing": 0,
+      "sheets": [
+        {
+          "file": "atlas_mobile_0.webp",
+          "bytes": 666492,
+          "sha256": "855549e2c7b0de0aeb37ed15105d7b276e4336e11e5e1f41ba4f0e8a395a6fb0"
+        }
+      ],
+      "colours_bin": {
+        "file": "colours_mobile.bin",
+        "dtype": "uint8",
+        "shape": [
+          3000,
+          3
+        ],
+        "sha256": "7b9e5041565c2ccf184e458167101b48cabe9e217557d4bdc529dd981b2eb08f"
+      },
+      "uv_rule": "layer = i // tiles_per_sheet; within = i % tiles_per_sheet; u = (within % tiles_per_side) / tiles_per_side; v = (within // tiles_per_side) / tiles_per_side"
+    }
+  },
+  "signal_colour": {
+    "hex": "#0CF9E6",
+    "hue_degrees": 175.0,
+    "chosen_candidate": "electric_cyan",
+    "method": "Design brief (\u00a712.2) sets the admissible set \u2014 electric cyan or hot magenta. Catalogue hue occupancy picks between them. Taste bounds the search; data chooses inside it.",
+    "candidate_occupancy": {
+      "electric_cyan": {
+        "articles_in_hue": 0,
+        "hue_degrees": 175.0
+      },
+      "hot_magenta": {
+        "articles_in_hue": 0,
+        "hue_degrees": 295.0
+      }
+    },
+    "unconstrained_emptiest_hue_degrees": 105.0,
+    "why_not_unconstrained": "The globally emptiest bin is acid green, which \u00a712.2 lists among the deliberately avoided treatments. Recorded rather than silently discarded.",
+    "n_chromatic_articles": 2272,
+    "bin_counts": [
+      424,
+      36,
+      198,
+      378,
+      153,
+      8,
+      116,
+      6,
+      2,
+      1,
+      0,
+      0,
+      2,
+      0,
+      0,
+      5,
+      8,
+      0,
+      49,
+      11,
+      4,
+      372,
+      27,
+      0,
+      191,
+      0,
+      2,
+      6,
+      0,
+      0,
+      7,
+      1,
+      1,
+      74,
+      140,
+      50
+    ],
+    "occupancy_of_chosen_bin": 0,
+    "busiest_bin_count": 424
+  },
+  "format": {
+    "container": "webp",
+    "deviation_from_plan": "PLAN.md \u00a78 specified KTX2/ETC1S, which stays compressed in VRAM. The basisu toolchain is absent, so WebP is used: browser-native, no toolchain, ~1MB/sheet over the wire. Cost is GPU memory \u2014 WebP decodes to uncompressed RGBA (~268MB for 4 desktop sheets vs ~32MB for ETC1S). Fine on unified-memory Apple Silicon and desktop GPUs; the mobile variant is a single 32px sheet at 3k instances for that reason. Moving to KTX2 is a toolchain install, not a redesign."
+  },
+  "total_bytes": 8975598
+}

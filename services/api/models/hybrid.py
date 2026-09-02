@@ -45,10 +45,11 @@ def _rank_normalise(scores: np.ndarray) -> np.ndarray:
 
 
 class Hybrid(Recommender):
-    #: True because the CONTENT arm covers what collaborative cannot. This is
-    #: the concrete reason the hybrid exists rather than a preference for
-    #: ensembles.
-    handles_cold_articles = True
+    #: Scores them finitely via the content arm. Whether it SURFACES them is a
+    #: separate, measured question — and for the weighted mode the measured
+    #: answer is no. Only the cascade surfaces cold articles, because it ROUTES
+    #: to content rather than blending against it.
+    can_score_cold_articles = True
 
     def __init__(
         self,
@@ -91,14 +92,29 @@ class Hybrid(Recommender):
             return cf if self._depth(customer_id) >= self.cascade_min_history else cb
 
         rf, rb = _rank_normalise(cf), _rank_normalise(cb)
-        both = np.isfinite(rf) & np.isfinite(rb)
         out = np.full(self._n, -np.inf, dtype=np.float32)
+
+        both = np.isfinite(rf) & np.isfinite(rb)
         out[both] = self.w_collab * rf[both] + (1 - self.w_collab) * rb[both]
-        # Where only content can score — the cold articles — take content
-        # alone, scaled by its weight so it cannot outrank a blended item on
-        # the strength of having fewer contributors.
+
+        # An arm that CANNOT score an item contributes its PRIOR, not zero.
+        #
+        # The first implementation scaled content-only items by (1 - w_collab),
+        # reasoning that an item with fewer contributors should not outrank a
+        # blended one. That is wrong, and the evaluation caught it: blended
+        # items reach 1.0 while content-only items cap at 0.4, so a cold
+        # article can never enter a top-20 no matter how good it is. The arm
+        # declares can_score_cold_articles = True and delivered exactly ZERO
+        # impressions on the 348 cold articles — the contract was false in
+        # practice.
+        #
+        # Imputing the neutral rank (0.5, the median) is the principled fix:
+        # "collaborative has no opinion" is not "collaborative says no". A
+        # top-ranked cold article now scores 0.6*0.5 + 0.4*1.0 = 0.70 and
+        # competes, while a mediocre one still loses.
+        NEUTRAL = 0.5
         only_cb = np.isfinite(rb) & ~np.isfinite(rf)
-        out[only_cb] = (1 - self.w_collab) * rb[only_cb]
+        out[only_cb] = self.w_collab * NEUTRAL + (1 - self.w_collab) * rb[only_cb]
         return out
 
     def similar_items(self, article_id: str, k: int = 10) -> list[tuple[str, float]]:

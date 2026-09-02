@@ -1,0 +1,52 @@
+{
+  "pipeline": "graph_v1",
+  "generated_at": "2026-09-03T01:50:00+05:30",
+  "git_rev": "68bf72c",
+  "python": "3.13.5",
+  "thresholds": {
+    "co_min_support": 20,
+    "co_min_lift": 1.5,
+    "co_top_n": 30,
+    "visual_min_cosine": 0.82,
+    "visual_k": 20,
+    "visual_mutual_knn": true
+  },
+  "counts": {
+    "nodes": 13713,
+    "edges": 328318,
+    "by_relation": {
+      "visually_near": 142184,
+      "substitutes_for": 113730,
+      "is_a": 40788,
+      "has_colour": 13548,
+      "has_gender": 13548,
+      "co_purchased_with": 4520
+    },
+    "by_node_type": {
+      "Article": 13548,
+      "ArticleType": 95,
+      "Colour": 48,
+      "SubCategory": 12,
+      "Gender": 5,
+      "MasterCategory": 5
+    }
+  },
+  "storage": {
+    "format": "parquet edge list, loaded to an in-memory adjacency",
+    "deviation_from_plan": "PLAN.md \u00a75 specified Postgres recursive CTEs. At ~13.5k nodes / this edge count the whole graph is a few MB, so an in-memory adjacency is faster, needs no migration, and the edge list is relational and loads into Postgres unchanged if ever needed."
+  },
+  "predicted_edges": {
+    "present": false,
+    "note": "has_season / has_usage require the FPI attribute classifier. Until it exists every article is season_unknown and POL-AVL-03 admits everything \u2014 see corpus C POL-AVL-05."
+  },
+  "outputs": {
+    "edges.parquet": {
+      "rows": 328318,
+      "sha256": "0beb7e46a5a525caf5e99714c4f01d8d1fd2db7a13f0350e80732a593b23bd94"
+    },
+    "nodes.parquet": {
+      "rows": 13713,
+      "sha256": "a3ff01206b9941a6a723dd5dc4bb8530e018dd1388e3f77804a6069cb6a338c7"
+    }
+  }
+}

@@ -13,6 +13,7 @@ from __future__ import annotations
 import numpy as np
 import polars as pl
 
+from services.api.core.numerics import safe_matmul
 from services.api.models.base import Recommender
 
 RECENCY_HALF_LIFE = 28.0
@@ -20,7 +21,7 @@ RECENCY_HALF_LIFE = 28.0
 
 class ContentKNN(Recommender):
     name = "content"
-    handles_cold_articles = True
+    can_score_cold_articles = True
 
     def __init__(self, half_life_days: float = RECENCY_HALF_LIFE, seed: int = 20260903):
         super().__init__(seed)
@@ -73,14 +74,14 @@ class ContentKNN(Recommender):
             # is not "scores everything equally badly", and the evaluation
             # stratifies on the difference.
             return np.full(self._n, -np.inf, dtype=np.float32)
-        return self._emb @ prof
+        return safe_matmul(self._emb, prof, where="content.score_customer")
 
     def similar_items(self, article_id: str, k: int = 10) -> list[tuple[str, float]]:
         self._check_fitted()
         i = self._idx.get(article_id)
         if i is None:
             return []
-        sims = self._emb @ self._emb[i]
+        sims = safe_matmul(self._emb, self._emb[i], where="content.similar_items")
         sims[i] = -np.inf
         top = np.argsort(-sims)[:k]
         return [(self._ids[j], float(sims[j])) for j in top]

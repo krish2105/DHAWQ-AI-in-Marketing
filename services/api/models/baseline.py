@@ -19,7 +19,7 @@ HALF_LIFE_DAYS = 21.0
 
 class PopularityRecency(Recommender):
     name = "popularity"
-    handles_cold_articles = True   # scores anything with training support
+    can_score_cold_articles = True   # scores anything with training support
 
     def __init__(self, half_life_days: float = HALF_LIFE_DAYS, seed: int = 20260903):
         super().__init__(seed)

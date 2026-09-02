@@ -23,11 +23,21 @@ class Recommender(ABC):
     """A ranked-list producer over the frozen catalogue."""
 
     name: str = "abstract"
-    #: False for arms that cannot score an article absent from training.
-    #: The collaborative arm sets this False — 9.9% of test rows involve such
-    #: articles (D1 manifest), and pretending otherwise would silently score
-    #: them as misses rather than as out-of-support.
-    handles_cold_articles: bool = True
+    #: STRUCTURAL: does this arm return a finite score for an article with no
+    #: training interaction? False for collaborative — no interaction means no
+    #: latent factor, so there is nothing to score, and 9.9% of test rows
+    #: involve such articles (D1 manifest).
+    #:
+    #: This is deliberately NOT a claim that the arm surfaces cold articles.
+    #: Those are different properties and conflating them produced a real bug:
+    #: the weighted hybrid declared cold-article support, scored them finitely,
+    #: and delivered zero impressions because blended items cluster near the
+    #: top of the rank-normalised scale while a single-arm item with a neutral
+    #: prior caps around 0.70 (measured median rank: 2,678 of 13,548).
+    #:
+    #: What an arm SURFACES is measured, not declared —
+    #: `impressions_on_cold_articles` in the eval artefact.
+    can_score_cold_articles: bool = True
 
     def __init__(self, seed: int = 20260903) -> None:
         self.seed = seed

@@ -1,0 +1,38 @@
+{
+  "pipeline": "embed_v1",
+  "generated_at": "2026-09-03T01:45:28+05:30",
+  "git_rev": "68bf72c",
+  "python": "3.13.5",
+  "model": {
+    "arch": "ViT-L-14",
+    "pretrained": "laion2b_s32b_b82k",
+    "device": "mps",
+    "dim": 768,
+    "normalised": true
+  },
+  "counts": {
+    "articles": 13548,
+    "failed": 0
+  },
+  "failed_article_ids": [],
+  "timing": {
+    "seconds": 729.9,
+    "images_per_second": 18.6,
+    "final_batch_size": 64
+  },
+  "canonical_order": "sorted(article_id) \u2014 see pipelines/common.canonical_article_order",
+  "outputs": {
+    "clip_image.npy": {
+      "shape": [
+        13548,
+        768
+      ],
+      "dtype": "float32",
+      "sha256": "cb96e25ab4a5b775572282f8c5fed80b75974d7ea880bbd4ff6b7696f3e5ff54"
+    },
+    "article_ids.json": {
+      "n": 13548,
+      "sha256": "ca338772351984c657cc007ae61b34857e113e2a67f753a8ed23785ad26e8166"
+    }
+  }
+}

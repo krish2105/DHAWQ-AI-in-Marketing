@@ -19,6 +19,7 @@ import numpy as np
 import polars as pl
 import scipy.sparse as sp
 
+from services.api.core.numerics import safe_matmul
 from services.api.models.base import Recommender
 
 # BLAS threads fight implicit's own threading and make results non-deterministic
@@ -37,7 +38,7 @@ class ImplicitALS(Recommender):
     #: interaction has no latent factor — there is nothing to score. D1 found
     #: 348 such articles covering 9.9% of test rows. Declaring it here means
     #: the evaluation reports it as out-of-support rather than as a miss.
-    handles_cold_articles = False
+    can_score_cold_articles = False
 
     def __init__(
         self,
@@ -110,7 +111,8 @@ class ImplicitALS(Recommender):
         u = self._cust_idx.get(customer_id)
         if u is None:
             return np.full(self._n, -np.inf, dtype=np.float32)
-        scores = (self._model.item_factors @ self._model.user_factors[u]).astype(np.float32)
+        scores = safe_matmul(self._model.item_factors, self._model.user_factors[u],
+                             where="als.score_customer").astype(np.float32)
         scores[~self._has_support] = -np.inf
         return scores
 

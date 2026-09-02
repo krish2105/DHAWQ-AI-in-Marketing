@@ -118,3 +118,27 @@ def test_metrics_are_monotone_non_decreasing_in_k(metric):
     relevant = {"c", "e"}
     vals = [metric(REC, relevant, k) for k in (1, 2, 3, 4, 5)]
     assert all(b >= a - 1e-12 for a, b in zip(vals, vals[1:]))
+
+
+# ── the cold-article contract ────────────────────────────────────────────────
+
+def test_arms_declare_only_what_is_structurally_true():
+    """`can_score_cold_articles` is about whether a finite score comes back,
+    NOT about whether cold articles reach a slate.
+
+    Conflating the two produced a real bug: the weighted hybrid declared
+    cold-article support and delivered zero impressions. Surfacing is measured
+    in the eval artefact, never declared here.
+    """
+    from services.api.models.baseline import PopularityRecency
+    from services.api.models.collaborative import ImplicitALS
+    from services.api.models.content import ContentKNN
+    from services.api.models.hybrid import Hybrid
+
+    assert ImplicitALS().can_score_cold_articles is False
+    assert ContentKNN().can_score_cold_articles is True
+    assert Hybrid(mode="weighted").can_score_cold_articles is True
+    assert PopularityRecency().can_score_cold_articles is True
+    assert not hasattr(ContentKNN(), "handles_cold_articles"), (
+        "the ambiguous name must not come back"
+    )

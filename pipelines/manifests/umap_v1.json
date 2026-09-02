@@ -1,0 +1,40 @@
+{
+  "pipeline": "umap_v1",
+  "generated_at": "2026-09-03T01:46:19+05:30",
+  "git_rev": "68bf72c",
+  "python": "3.13.5",
+  "params": {
+    "n_components": 3,
+    "n_neighbors": 25,
+    "min_dist": 0.12,
+    "metric": "cosine",
+    "seed": 20260903
+  },
+  "counts": {
+    "points": 13548
+  },
+  "extent": {
+    "min": [
+      -52.60917663574219,
+      -53.991432189941406,
+      -49.12058639526367
+    ],
+    "max": [
+      22.919294357299805,
+      30.89653778076172,
+      46.452735900878906
+    ]
+  },
+  "stability_note": "UMAP is not deterministic across runs without a fixed seed. The seed is pinned and the coordinates are a frozen artefact; the scene never recomputes them.",
+  "outputs": {
+    "positions.bin": {
+      "dtype": "float32",
+      "shape": [
+        13548,
+        3
+      ],
+      "layout": "row-major xyz, index == canonical article index",
+      "sha256": "a9a27460190a0403ba1950377ea6ab0dc8393ef9fcb8fb17d2c448dfa0d7060d"
+    }
+  }
+}
