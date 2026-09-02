@@ -98,3 +98,30 @@ def write_manifest(name: str, payload: dict[str, Any]) -> Path:
 
 def read_manifest(name: str) -> dict[str, Any]:
     return json.loads((MANIFEST_DIR / f"{name}.json").read_text())
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# The canonical instance index.
+#
+# THE invariant of the 3D scene (PLAN.md §8). Embeddings, UMAP positions,
+# dominant colours, atlas UVs and metadata are all indexed by ONE integer,
+# assigned by sorting article_id ascending. Get this wrong and every product in
+# the gallery shows the wrong photograph — a bug that looks like a rendering
+# problem and is actually an indexing problem, and one that is very hard to
+# spot when 13,548 garments all look plausible.
+#
+# Every pipeline that emits a per-article array calls this. Nothing sorts by
+# hand.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def canonical_article_order(article_ids: "list[str] | set[str]") -> list[str]:
+    """Stable, total order over article ids. Lexicographic on the zero-padded
+    string, which for fixed-width ids is also numeric order."""
+    return sorted(set(article_ids))
+
+
+def load_canonical_ids() -> list[str]:
+    """The frozen catalogue's canonical order, read from the D1 artefact."""
+    import polars as pl
+    df = pl.read_parquet(DATA_PROCESSED / "articles.parquet", columns=["article_id"])
+    return canonical_article_order(df.get_column("article_id").to_list())
