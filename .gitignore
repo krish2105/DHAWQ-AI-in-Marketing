@@ -14,3 +14,5 @@ apps/web/public/static/*.webp
 apps/web/public/static/*.bin
 apps/web/public/static/meta.json
 apps/web/tsconfig.tsbuildinfo
+eval/artifacts/*.json
+eval/failures/
