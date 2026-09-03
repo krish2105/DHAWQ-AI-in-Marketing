@@ -1,6 +1,6 @@
 {
-  "run_id": "run_20260903_015210_6a693c",
-  "created_at": "2026-09-03T01:52:10+05:30",
+  "run_id": "run_20260903_110701_65cc04",
+  "created_at": "2026-09-03T11:07:01+05:30",
   "corpus": "B",
   "kind": "recommender_evaluation",
   "data": {
@@ -255,13 +255,15 @@
         ]
       },
       "cold_articles": {
-        "handled_by_arm": true,
-        "impressions_on_cold_articles": 0
+        "can_score": true,
+        "impressions_on_cold_articles": 0,
+        "surfacing_rate": 0.0,
+        "note": "can_score is structural; impressions are measured. The weighted hybrid scores cold articles finitely and still surfaces none \u2014 blended items cluster near 1.0 while a single-arm item with a neutral prior caps near 0.70."
       },
       "timing": {
-        "fit_seconds": 0.52,
-        "recommend_seconds": 2.71,
-        "ms_per_customer": 0.54
+        "fit_seconds": 0.64,
+        "recommend_seconds": 4.16,
+        "ms_per_customer": 0.82
       }
     },
     "content": {
@@ -364,14 +366,14 @@
       "beyond_accuracy": {
         "catalogue_coverage": 0.6242987894892235,
         "gini": 0.8156907243381557,
-        "long_tail_exposure": 0.6830111111111111,
+        "long_tail_exposure": 0.6826,
         "novelty": 13.419842644017374,
         "serendipity": 0.0026666666666666666,
         "mean_intra_list_diversity": 0.11366264380514622
       },
       "bias": {
         "popularity_lift": 1.4040010410581667,
-        "head_share_of_impressions": 0.3169888888888889,
+        "head_share_of_impressions": 0.3174,
         "concentration_curve": [
           [
             0.0001,
@@ -456,13 +458,15 @@
         ]
       },
       "cold_articles": {
-        "handled_by_arm": true,
-        "impressions_on_cold_articles": 3472
+        "can_score": true,
+        "impressions_on_cold_articles": 3472,
+        "surfacing_rate": 0.0343,
+        "note": "can_score is structural; impressions are measured. The weighted hybrid scores cold articles finitely and still surfaces none \u2014 blended items cluster near 1.0 while a single-arm item with a neutral prior caps near 0.70."
       },
       "timing": {
-        "fit_seconds": 2.35,
-        "recommend_seconds": 4.32,
-        "ms_per_customer": 0.85
+        "fit_seconds": 3.9,
+        "recommend_seconds": 6.53,
+        "ms_per_customer": 1.29
       }
     },
     "collaborative": {
@@ -565,14 +569,14 @@
       "beyond_accuracy": {
         "catalogue_coverage": 0.3464718039563035,
         "gini": 0.8649838188498509,
-        "long_tail_exposure": 0.09392222222222223,
+        "long_tail_exposure": 0.0939,
         "novelty": 11.947880037285335,
         "serendipity": 0.004611111111111111,
         "mean_intra_list_diversity": 0.2476743698120117
       },
       "bias": {
         "popularity_lift": 4.12069966189531,
-        "head_share_of_impressions": 0.9060777777777778,
+        "head_share_of_impressions": 0.9061,
         "concentration_curve": [
           [
             0.0001,
@@ -657,13 +661,15 @@
         ]
       },
       "cold_articles": {
-        "handled_by_arm": false,
-        "impressions_on_cold_articles": 0
+        "can_score": false,
+        "impressions_on_cold_articles": 0,
+        "surfacing_rate": 0.0,
+        "note": "can_score is structural; impressions are measured. The weighted hybrid scores cold articles finitely and still surfaces none \u2014 blended items cluster near 1.0 while a single-arm item with a neutral prior caps near 0.70."
       },
       "timing": {
-        "fit_seconds": 29.12,
-        "recommend_seconds": 3.23,
-        "ms_per_customer": 0.64
+        "fit_seconds": 44.92,
+        "recommend_seconds": 5.07,
+        "ms_per_customer": 1.0
       }
     },
     "hybrid_weighted": {
@@ -766,14 +772,14 @@
       "beyond_accuracy": {
         "catalogue_coverage": 0.4683348095659876,
         "gini": 0.839535295082505,
-        "long_tail_exposure": 0.25322222222222224,
+        "long_tail_exposure": 0.2527111111111111,
         "novelty": 12.461212400150568,
         "serendipity": 0.004622222222222222,
         "mean_intra_list_diversity": 0.15688154570758342
       },
       "bias": {
         "popularity_lift": 3.0490539431752564,
-        "head_share_of_impressions": 0.7467777777777778,
+        "head_share_of_impressions": 0.7472888888888889,
         "concentration_curve": [
           [
             0.0001,
@@ -858,13 +864,15 @@
         ]
       },
       "cold_articles": {
-        "handled_by_arm": true,
-        "impressions_on_cold_articles": 0
+        "can_score": true,
+        "impressions_on_cold_articles": 0,
+        "surfacing_rate": 0.0,
+        "note": "can_score is structural; impressions are measured. The weighted hybrid scores cold articles finitely and still surfaces none \u2014 blended items cluster near 1.0 while a single-arm item with a neutral prior caps near 0.70."
       },
       "timing": {
-        "fit_seconds": 32.04,
-        "recommend_seconds": 11.68,
-        "ms_per_customer": 2.31
+        "fit_seconds": 49.44,
+        "recommend_seconds": 17.82,
+        "ms_per_customer": 3.52
       }
     },
     "hybrid_cascade": {
@@ -967,14 +975,14 @@
       "beyond_accuracy": {
         "catalogue_coverage": 0.6547829937998229,
         "gini": 0.7643198996161795,
-        "long_tail_exposure": 0.28365555555555555,
+        "long_tail_exposure": 0.2835111111111111,
         "novelty": 12.437372812041643,
         "serendipity": 0.0038,
         "mean_intra_list_diversity": 0.20506771005690097
       },
       "bias": {
         "popularity_lift": 3.2750583705430296,
-        "head_share_of_impressions": 0.7163444444444445,
+        "head_share_of_impressions": 0.7164888888888888,
         "concentration_curve": [
           [
             0.0001,
@@ -1059,13 +1067,15 @@
         ]
       },
       "cold_articles": {
-        "handled_by_arm": true,
-        "impressions_on_cold_articles": 1004
+        "can_score": true,
+        "impressions_on_cold_articles": 1004,
+        "surfacing_rate": 0.00992,
+        "note": "can_score is structural; impressions are measured. The weighted hybrid scores cold articles finitely and still surfaces none \u2014 blended items cluster near 1.0 while a single-arm item with a neutral prior caps near 0.70."
       },
       "timing": {
-        "fit_seconds": 32.52,
-        "recommend_seconds": 4.59,
-        "ms_per_customer": 0.91
+        "fit_seconds": 49.14,
+        "recommend_seconds": 6.87,
+        "ms_per_customer": 1.36
       }
     }
   },
@@ -1082,28 +1092,28 @@
       "ndcg@10": 0.006000906653166926,
       "coverage": 0.6242987894892235,
       "gini": 0.8156907243381557,
-      "long_tail_exposure": 0.6830111111111111
+      "long_tail_exposure": 0.6826
     },
     {
       "model": "collaborative",
       "ndcg@10": 0.01270419741704373,
       "coverage": 0.3464718039563035,
       "gini": 0.8649838188498509,
-      "long_tail_exposure": 0.09392222222222223
+      "long_tail_exposure": 0.0939
     },
     {
       "model": "hybrid_weighted",
       "ndcg@10": 0.012048087285090468,
       "coverage": 0.4683348095659876,
       "gini": 0.839535295082505,
-      "long_tail_exposure": 0.25322222222222224
+      "long_tail_exposure": 0.2527111111111111
     },
     {
       "model": "hybrid_cascade",
       "ndcg@10": 0.009943998160994116,
       "coverage": 0.6547829937998229,
       "gini": 0.7643198996161795,
-      "long_tail_exposure": 0.28365555555555555
+      "long_tail_exposure": 0.2835111111111111
     }
   ]
 }
