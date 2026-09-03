@@ -81,6 +81,23 @@ def render(agent: dict | None, recs: dict | None) -> str:
             a(f"  {b['bin']:<12}{b['n']:>5}{b['mean_confidence']:>10.3f}"
               f"{b['observed_accuracy']:>10.3f}{b['gap']:>+8.3f}")
         a("")
+        a("STABILITY  (§10.4 — same brief, 5 runs)")
+        st = agent["stability"]
+        a(f"  identical slates       {st['identical_slates']}")
+        a(f"  max rank delta         {st['max_rank_delta']}")
+        a(f"  mean slate churn       {st['mean_slate_churn']:.4f}")
+        a(f"  verdict stable         {st['verdicts_stable']}")
+        if agent.get("generated_set"):
+            g = agent["generated_set"]
+            a("")
+            a(f"GENERATED SET  ({g['n']} briefs derived from corpus C rules — a")
+            a("  DIFFERENT generator from the hand-written set, scored separately)")
+            a(_row("task_completion_rate", g["task_completion_rate"], 0.85,
+                   g["task_completion_rate"] >= 0.85))
+            for sev, v in sorted(g["by_severity"].items()):
+                a(f"  {sev:<24}{v['passed']:>3}/{v['n']:<3} "
+                  f"{v['passed']/max(v['n'],1):>6.1%}")
+        a("")
         a("BY STRATUM")
         for s, v in agent["by_stratum"].items():
             a(f"  {s:<26} {v['passed']:>3}/{v['n']:<3} "

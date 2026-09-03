@@ -82,6 +82,59 @@ def load_golden() -> dict:
     return yaml.safe_load(GOLDEN.read_text())
 
 
+GENERATED = REPO / "eval" / "golden" / "generated_v1.yaml"
+
+
+def load_generated() -> dict | None:
+    """The corpus-C-derived set. Scored SEPARATELY from the hand-written
+    briefs — blending them would let a strong score on one hide a weak score
+    on the other."""
+    if not GENERATED.exists():
+        return None
+    return yaml.safe_load(GENERATED.read_text())
+
+
+def measure_stability(brief: str, runs: int = 5) -> dict:
+    """§10.4: same brief, N runs, report the maximum delta.
+
+    "Non-determinism is fine; UNBOUNDED non-determinism is not." The
+    deterministic core should give byte-identical slates; the only variance can
+    come from the model layer in triage, so this measures whether that leaks
+    into the output.
+    """
+    from services.api.agent.graph import new_run, run_to_gate
+    from services.api.core.rbac import Role
+
+    slates, verdicts = [], []
+    for _ in range(runs):
+        r = run_to_gate(new_run(brief, "stability", Role.MERCHANDISER))
+        slates.append(r.candidate_slates[-1].article_ids if r.candidate_slates else [])
+        verdicts.append(r.triage_verdict)
+
+    base = slates[0]
+    pos = {a: i for i, a in enumerate(base)}
+    max_delta, churn = 0, []
+    for s2 in slates[1:]:
+        for i, a in enumerate(s2):
+            if a in pos:
+                max_delta = max(max_delta, abs(pos[a] - i))
+        churn.append(len(set(base) ^ set(s2)) / max(2 * len(base), 1))
+
+    return {
+        "runs": runs,
+        "identical_slates": all(s == base for s in slates[1:]),
+        "max_rank_delta": max_delta,
+        "mean_slate_churn": round(sum(churn) / len(churn), 4) if churn else 0.0,
+        "verdicts_stable": len(set(verdicts)) == 1,
+        "interpretation": (
+            "The deterministic core should be byte-identical across runs; any "
+            "variance originates in the model layer used by triage. A non-zero "
+            "churn here means a model decision is leaking into slate "
+            "composition."
+        ),
+    }
+
+
 def load_redteam() -> dict:
     return yaml.safe_load(REDTEAM.read_text())
 
@@ -248,6 +301,33 @@ def run_suite(limit: int | None = None) -> dict:
         ),
     }
 
+    # ── the corpus-C-derived set, scored on its own ──────────────────────────
+    gen = load_generated()
+    generated_block = None
+    if gen:
+        g_results = [evaluate_brief(b) for b in gen["briefs"]]
+        g_pass = sum(r.passed for r in g_results)
+        by_sev: dict[str, dict] = {}
+        for b, r in zip(gen["briefs"], g_results):
+            d = by_sev.setdefault(b["severity"], {"n": 0, "passed": 0})
+            d["n"] += 1
+            d["passed"] += int(r.passed)
+        generated_block = {
+            "n": len(g_results),
+            "task_completion_rate": round(g_pass / max(len(g_results), 1), 4),
+            "by_severity": by_sev,
+            "provenance": gen["provenance"],
+            "failures": [
+                {"id": r.brief_id, "rule": b["source_rule"],
+                 "expected": r.expected, "actual": r.actual}
+                for b, r in zip(gen["briefs"], g_results) if not r.passed
+            ][:20],
+        }
+
+    stability = measure_stability(
+        "Build a 12-slot landing page for the loyal segment, minimum 20% long-tail."
+    )
+
     inj = measure_injection_recall()
     # BLOCK RECALL vs EXACT MATCH. On a safety property these are different
     # questions and reporting only the first hides the second: a brief that
@@ -299,6 +379,8 @@ def run_suite(limit: int | None = None) -> dict:
         "operating": operating,
         "injection": inj,
         "calibration": calibration,
+        "generated_set": generated_block,
+        "stability": stability,
         "by_stratum": by_stratum,
         "refusal_behaviour_detail": {
             "must_block": len(must_block), "blocked": len(blocked),
