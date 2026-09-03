@@ -84,7 +84,14 @@ def embeddings() -> np.ndarray:
 
     Already unit-norm from D2, so cosine similarity is a plain dot product.
     """
-    return np.load(_require(PROCESSED / "embeddings" / "clip_image.npy", "02_embed.py"))
+    # Memory-mapped: the OS pages in only what is touched, so a request that
+    # scores a handful of articles does not fault in all 42MB. Read-only by
+    # construction, which also makes it impossible to mutate the frozen
+    # artefact in place.
+    return np.load(
+        _require(PROCESSED / "embeddings" / "clip_image.npy", "02_embed.py"),
+        mmap_mode="r",
+    )
 
 
 @lru_cache(maxsize=1)

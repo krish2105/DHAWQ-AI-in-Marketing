@@ -16,7 +16,7 @@ a promise in a document.
 
 from __future__ import annotations
 
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -64,25 +64,80 @@ class Path:
 
 
 class TaxonomyGraph:
+    """Adjacency stored as FLAT ARRAYS, not Python objects.
+
+    The first version built one frozen `Hop` dataclass per edge. For a 1.9MB
+    parquet that cost 212MB resident — a 111x blowup — and combined with the
+    catalogue and the embedding matrix it took the deployed instance past its
+    512MB limit and got it OOM-killed. Measured on Render, not guessed: the
+    instance sat at 51-90MB and spiked to 536MB on a request that touched the
+    graph.
+
+    A graph is integers. Node ids, relation names and provenance labels are
+    interned once; the edges themselves are four numpy arrays plus a CSR offset
+    table, which is ~4MB. `Hop` objects are still the traversal's currency, but
+    they are now constructed ONLY for the handful of paths a query returns
+    rather than for all 328,318 edges up front.
+    """
+
+    __slots__ = ("_nodes", "_node_idx", "_rels", "_srcs",
+                 "_dst", "_rel", "_src", "_w", "_start", "_end")
+
     def __init__(self, edges: pl.DataFrame) -> None:
-        self._adj: dict[str, list[Hop]] = defaultdict(list)
-        for s, d, r, w, src in edges.iter_rows():
-            self._adj[s].append(Hop(s, d, r, float(w), src))
-        for hops in self._adj.values():
-            # Deterministic neighbour order: weight desc, then id. Traversal
-            # results feed a stability metric (§10.4); dict insertion order
-            # would make them depend on parquet row order.
-            hops.sort(key=lambda h: (-h.weight, h.dst))
-        self._adj = dict(self._adj)
+        import numpy as np
+
+        # Intern every string exactly once.
+        nodes = sorted(set(edges.get_column("src")) | set(edges.get_column("dst")))
+        self._nodes: list[str] = nodes
+        self._node_idx: dict[str, int] = {n: i for i, n in enumerate(nodes)}
+        self._rels: list[str] = sorted(set(edges.get_column("relation")))
+        rel_idx = {r: i for i, r in enumerate(self._rels)}
+        self._srcs: list[str] = sorted(set(edges.get_column("source")))
+        src_idx = {v: i for i, v in enumerate(self._srcs)}
+
+        e = edges.with_columns(
+            pl.col("src").replace_strict(self._node_idx).cast(pl.Int32).alias("s"),
+            pl.col("dst").replace_strict(self._node_idx).cast(pl.Int32).alias("d"),
+            pl.col("relation").replace_strict(rel_idx).cast(pl.Int16).alias("r"),
+            pl.col("source").replace_strict(src_idx).cast(pl.Int8).alias("p"),
+        ).sort(["s", "weight"], descending=[False, True])
+
+        s_arr = e.get_column("s").to_numpy()
+        self._dst = e.get_column("d").to_numpy().astype(np.int32, copy=False)
+        self._rel = e.get_column("r").to_numpy().astype(np.int16, copy=False)
+        self._src = e.get_column("p").to_numpy().astype(np.int8, copy=False)
+        self._w = e.get_column("weight").to_numpy().astype(np.float32, copy=False)
+
+        # CSR offsets. Neighbours of node i are the slice [start[i]:end[i]],
+        # already ordered by weight desc — deterministic, because traversal
+        # results feed a stability metric (§10.4) and must not depend on row
+        # order in the parquet.
+        n = len(nodes)
+        self._start = np.searchsorted(s_arr, np.arange(n), side="left")
+        self._end = np.searchsorted(s_arr, np.arange(n), side="right")
 
     # ── primitives ───────────────────────────────────────────────────────────
 
+    def _hop(self, src_i: int, k: int) -> Hop:
+        """Materialise one edge. Called for returned paths only."""
+        return Hop(self._nodes[src_i], self._nodes[self._dst[k]],
+                   self._rels[self._rel[k]], float(self._w[k]),
+                   self._srcs[self._src[k]])
+
     def neighbours(self, node: str, relations: set[str] | None = None) -> list[Hop]:
-        hops = self._adj.get(node, [])
-        return [h for h in hops if relations is None or h.relation in relations]
+        i = self._node_idx.get(node)
+        if i is None:
+            return []
+        out = []
+        for k in range(self._start[i], self._end[i]):
+            if relations is not None and self._rels[self._rel[k]] not in relations:
+                continue
+            out.append(self._hop(i, k))
+        return out
 
     def degree(self, node: str) -> int:
-        return len(self._adj.get(node, []))
+        i = self._node_idx.get(node)
+        return 0 if i is None else int(self._end[i] - self._start[i])
 
     # ── the tool surface ─────────────────────────────────────────────────────
 
@@ -99,36 +154,44 @@ class TaxonomyGraph:
         """Breadth-first path enumeration from `start`.
 
         Score is the PRODUCT of hop weights, so a long chain of weak edges
-        cannot outrank a short strong one — which is the failure mode that
-        makes naive graph expansion return confident nonsense at depth 3.
+        cannot outrank a short strong one — the failure mode that makes naive
+        graph expansion return confident nonsense at depth 3.
         """
         depth = max(1, min(depth, MAX_DEPTH))
+        i0 = self._node_idx.get(start)
+        if i0 is None:
+            return []
         exclude = (exclude or set()) | {start}
-        rels = set(relations) if relations else None
+        rel_ok = None if not relations else {
+            r for r, name in enumerate(self._rels) if name in set(relations)
+        }
 
         found: dict[str, Path] = {}
-        queue: deque[tuple[str, tuple[Hop, ...], float]] = deque([(start, (), 1.0)])
-        seen: set[str] = {start}
+        queue: deque[tuple[int, tuple[Hop, ...], float]] = deque([(i0, (), 1.0)])
+        seen: set[int] = {i0}
 
         while queue:
-            node, hops, score = queue.popleft()
+            node_i, hops, score = queue.popleft()
             if len(hops) >= depth:
                 continue
-            for h in self.neighbours(node, rels):
-                if h.dst in seen:
+            for k in range(self._start[node_i], self._end[node_i]):
+                if rel_ok is not None and self._rel[k] not in rel_ok:
                     continue
-                new_hops, new_score = hops + (h,), score * max(h.weight, 1e-6)
-                is_target = (
-                    ":" not in h.dst if target_type == "Article"
-                    else h.dst.startswith(f"{target_type}:")
-                )
-                if is_target and h.dst not in exclude:
-                    prev = found.get(h.dst)
+                d = int(self._dst[k])
+                if d in seen:
+                    continue
+                new_score = score * max(float(self._w[k]), 1e-6)
+                name = self._nodes[d]
+                is_target = (":" not in name if target_type == "Article"
+                             else name.startswith(f"{target_type}:"))
+                if is_target and name not in exclude:
+                    prev = found.get(name)
                     if prev is None or new_score > prev.score:
-                        found[h.dst] = Path(h.dst, new_hops, new_score)
-                if len(new_hops) < depth:
-                    seen.add(h.dst)
-                    queue.append((h.dst, new_hops, new_score))
+                        found[name] = Path(name, hops + (self._hop(node_i, k),),
+                                           new_score)
+                if len(hops) + 1 < depth:
+                    seen.add(d)
+                    queue.append((d, hops + (self._hop(node_i, k),), new_score))
 
         return sorted(found.values(), key=lambda p: (-p.score, p.target))[:limit]
 
@@ -143,9 +206,7 @@ class TaxonomyGraph:
         depth: int = 2, exclude: set[str] | None = None, limit: int = 100,
     ) -> list[Path]:
         """The multi-hop query §8.3 names: expand from what a cohort bought,
-        excluding what they already own. Scores accumulate across seeds, so an
-        article reachable from many of the cohort's purchases outranks one
-        reachable from a single purchase strongly."""
+        excluding what they already own."""
         exclude = (exclude or set()) | set(cohort_articles)
         agg: dict[str, Path] = {}
         for seed in cohort_articles:

@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from collections import OrderedDict
 import sys
 import uuid
 from datetime import datetime
@@ -67,10 +68,24 @@ async def _unhandled(request: Request, exc: Exception):
     ).model_dump()})
 
 
-# ── in-process run store. Postgres checkpointing is wired in graph.py; this is
-# ── the read model the SSE stream and the resume endpoint share.
-_RUNS: dict[str, MerchandisingRun] = {}
-_EVENTS: dict[str, list[dict]] = {}
+# In-process run store, BOUNDED. Postgres checkpointing is wired in graph.py;
+# this is the read model the SSE stream and the resume endpoint share.
+#
+# It was an unbounded dict. Each run holds its evidence, slates, tool calls and
+# rejections — ~12KB of JSON plus object overhead — and nothing ever evicted
+# them, so a long-lived instance grew until it was killed. A demo that leaks
+# slowly is still a service that dies.
+MAX_RUNS = 200
+_RUNS: "OrderedDict[str, MerchandisingRun]" = OrderedDict()
+_EVENTS: "OrderedDict[str, list[dict]]" = OrderedDict()
+
+
+def _remember(run: MerchandisingRun) -> None:
+    _RUNS[run.run_id] = run
+    _RUNS.move_to_end(run.run_id)
+    while len(_RUNS) > MAX_RUNS:
+        old, _ = _RUNS.popitem(last=False)
+        _EVENTS.pop(old, None)
 
 
 def _emit(run_id: str, type_: str, payload: dict) -> None:
@@ -277,7 +292,7 @@ class BriefIn(BaseModel):
 @app.post("/agent/runs", status_code=202)
 def submit_brief(body: BriefIn) -> dict:
     run = new_run(body.brief, "web-user", Role(body.caller_role))
-    _RUNS[run.run_id] = run
+    _remember(run)
     _emit(run.run_id, "run.started", {"goal": run.goal,
                                       "scopes": sorted(s.value for s in run.granted_scopes)})
     return {"run_id": run.run_id}
@@ -304,7 +319,7 @@ async def stream_events(run_id: str):
         await asyncio.sleep(0)
 
         finished = await asyncio.to_thread(run_to_gate, run)
-        _RUNS[run_id] = finished
+        _remember(finished)
 
         if finished.triage_verdict and finished.triage_verdict != "proceed":
             yield (f"event: triage.decided\ndata: "
@@ -355,5 +370,5 @@ def resume(run_id: str, body: ResumeIn) -> dict:
                                          actor_id="web-user", note=body.note))
     if run.phase.value == "explaining":
         run = explainer(run)
-    _RUNS[run_id] = run
+    _remember(run)
     return {"phase": run.phase.value, "final_slate_id": run.final_slate_id}
