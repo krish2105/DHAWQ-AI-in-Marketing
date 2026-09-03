@@ -368,6 +368,17 @@ def latest_eval() -> dict:
     }
 
 
+@app.get("/merchandise/session-lift")
+def session_lift_report() -> dict:
+    """What personalising each visitor's page is worth, with confidence
+    intervals. Public: it is a published result, not customer data."""
+    import glob, json as _json
+    files = sorted(glob.glob(str(REPO / "eval" / "artifacts" / "sessionlift_*.json")))
+    if not files:
+        raise HTTPException(404, "run eval/bench_session_lift.py")
+    return _json.loads(Path(files[-1]).read_text())
+
+
 @app.get("/segments/clv/holdout")
 def clv_holdout(user: sec.User = Depends(requires(Scope.SEGMENTS_READ_AGG))) -> dict:
     """§11's holdout validation: fit on the first period, predict the second,

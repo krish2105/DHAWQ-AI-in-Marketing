@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
 import { RequireScope } from "@/components/ui/SignIn";
+import { SessionLift, GranularityCurve } from "@/components/evaluate/SessionLift";
 import { useSearchParams } from "next/navigation";
 
 /* Merchandise view — the policy the whole constraint layer enforces, readable
@@ -71,6 +72,7 @@ function MerchandiseView() {
   const [segment, setSegment] = useState(params.get("segment") ?? "champions");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<ApiError | null>(null);
+  const [lift, setLift] = useState<any>(null);
 
   const load = useCallback(() => {
     setErr(null);
@@ -79,6 +81,11 @@ function MerchandiseView() {
   }, []);
 
   useEffect(load, [load]);
+
+  useEffect(() => {
+    apiGet<any>("/api/merchandise/session-lift").then((r) =>
+      r.ok ? setLift(r.data) : null);   // optional until the bench has run
+  }, []);
 
   useEffect(() => {
     setBusy(true);
@@ -101,12 +108,59 @@ function MerchandiseView() {
         cannot miss a rule because a chunk failed to rank.
       </p>
 
+      {lift && (
+        <section style={{ marginBlock: "var(--space-6)" }}>
+          <h2 style={{
+            fontSize: "var(--step--1)", textTransform: "uppercase",
+            letterSpacing: "0.12em", color: "var(--text-muted)", fontWeight: 600,
+          }}>
+            Personalising each visitor&rsquo;s page — what it is actually worth
+          </h2>
+          <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                      maxInlineSize: "74ch", marginBlockEnd: "var(--space-4)", lineHeight: 1.6 }}>
+            {lift.protocol.n_sessions.toLocaleString()} sessions, each scored
+            against that customer&rsquo;s <strong>own</strong> held-out purchases —
+            the one relevance signal neither arm can influence.
+          </p>
+          <SessionLift results={lift.results} />
+
+          <div style={{
+            marginBlockStart: "var(--space-5)", padding: "var(--space-4)",
+            borderRadius: "var(--radius-md)", background: "var(--surface)",
+            borderInlineStart: "3px solid var(--signal)", maxInlineSize: "80ch",
+          }}>
+            <div style={{ fontSize: "var(--step--1)", lineHeight: 1.65 }}>
+              {lift.the_finding}
+            </div>
+          </div>
+
+          <p style={{ fontSize: "var(--step--1)", color: "var(--reject)",
+                      maxInlineSize: "80ch", marginBlockStart: "var(--space-4)", lineHeight: 1.6 }}>
+            {lift.hypothesis_tested_and_rejected}
+          </p>
+
+          <h2 style={{
+            fontSize: "var(--step--1)", textTransform: "uppercase", marginBlockStart: "var(--space-6)",
+            letterSpacing: "0.12em", color: "var(--text-muted)", fontWeight: 600,
+          }}>
+            How much one shared page gives away
+          </h2>
+          <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                      maxInlineSize: "74ch", marginBlockEnd: "var(--space-3)", lineHeight: 1.6 }}>
+            The segment-granularity decision, priced. A page shared by more
+            customers converges on the bestsellers — which is why a cohort slate
+            and a personalised page are different products.
+          </p>
+          <GranularityCurve curve={lift.granularity_curve} />
+        </section>
+      )}
+
       <section style={{ marginBlock: "var(--space-6)" }}>
         <h2 style={{
           fontSize: "var(--step--1)", textTransform: "uppercase",
           letterSpacing: "0.12em", color: "var(--text-muted)", fontWeight: 600,
         }}>
-          Slot simulator — your model against the bestseller page
+          Slot simulator — one slate for a whole cohort
         </h2>
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBlock: "var(--space-3)" }}>

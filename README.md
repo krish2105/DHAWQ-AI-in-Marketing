@@ -92,7 +92,7 @@ Tests: `python3 -m pytest tests/ -q` — 129 passing.
 <!-- DHAWQ:EVAL:BEGIN -->
 ```
 DHAWQ — EVALUATION REPORT
-Generated 2026-09-03 11:07
+Generated 2026-09-03 11:47
 Golden set: 83 briefs (v1, assistant_reviewed) · Model: ollama
 
   ** GOLDEN SET IS NOT INDEPENDENTLY REVIEWED (status: assistant_reviewed). The briefs, the labels and the code that scores them share one author, so these metrics are PROVISIONAL. A paraphrase review was run and its findings are in the file; it improved the labels but cannot supply the independence §10.2 asks for. A second reader is what would.
@@ -112,8 +112,8 @@ TUNING
   escalation_precision                 1.000              
 
 OPERATING
-  latency_p50_seconds                  0.787              
-  latency_p95_seconds                  1.087    [25.000]  PASS
+  latency_p50_seconds                  0.811              
+  latency_p95_seconds                  1.159    [25.000]  PASS
   budget_overrun_rate                  0.000    [0.050]   PASS
   cost_per_brief_usd                   0.000              
 
@@ -128,6 +128,19 @@ CALIBRATION  (§10.3 — does the stated confidence mean anything?)
   bin             n    stated  observed     gap
   0.6-0.8        55     0.747     0.727  +0.020
   0.8-1.0        28     0.974     1.000  -0.026
+
+STABILITY  (§10.4 — same brief, 5 runs)
+  identical slates       True
+  max rank delta         0
+  mean slate churn       0.0000
+  verdict stable         True
+
+GENERATED SET  (48 briefs derived from corpus C rules — a
+  DIFFERENT generator from the hand-written set, scored separately)
+  task_completion_rate                 0.583    [0.850]   BELOW
+  escalate                  7/7   100.0%
+  hard                     19/35   54.3%
+  soft                      2/6    33.3%
 
 BY STRATUM
   standard                    21/24   87.5%
@@ -160,7 +173,7 @@ RECOMMENDERS — accuracy vs coverage (the frontier IS the finding)
   content              0.0060   0.0029     0.624   0.816   0.683      1.4
   collaborative        0.0127   0.0069     0.346   0.865   0.094      4.1
   hybrid_weighted      0.0120   0.0065     0.468   0.840   0.253      3.0
-  hybrid_cascade       0.0099   0.0052     0.655   0.764   0.284      3.3
+  hybrid_cascade       0.0099   0.0052     0.655   0.764   0.283      3.3
 
   Cold-start NDCG@10 by training history depth
   model                     0      1-2      3-9      10+
