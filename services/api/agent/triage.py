@@ -30,6 +30,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from services.api.agent import acts
+
 Verdict = Literal["proceed", "refuse", "escalate", "unknown"]
 
 # THE MODEL'S SELF-REPORTED CONFIDENCE IS NOT USED AS A GATE, and finding out
@@ -76,8 +78,19 @@ K_MIN, K_MAX = 4, 24
 
 
 def extract_k(brief: str) -> int | None:
+    """Reads digits AND written-out numbers.
+
+    "I only need three slots" is the same request as "3 slots". Reading only
+    digits made POL-SLT-01 a rule about typography rather than about slate
+    size, and two golden briefs fell straight through it."""
     m = _K_RE.search(brief)
-    return int(m.group(1)) if m else None
+    if m:
+        return int(m.group(1))
+    toks = acts.tokens(brief)          # tokens() maps number words to digits
+    for i, t in enumerate(toks[:-1]):
+        if t.isdigit() and toks[i + 1] in ("slot", "slots", "item", "items"):
+            return int(t)
+    return None
 
 
 # ── rule tables. Each entry: (pattern, rule_id, reason) ──────────────────────
@@ -283,6 +296,29 @@ def triage(brief: str, provider=None, use_model: bool = True) -> Triage:
         return Triage("escalate", tuple(r for _, r in hits),
                       tuple(rid for rid, _ in hits if rid),
                       k=k, detected_injection=injected)
+
+    # 5 — SEMANTIC ACTS. What the brief asks for, not how it is phrased.
+    #
+    # The literal rules above run FIRST because they are 1.0 precise and cite a
+    # rule id deterministically. This layer sees only what they missed, and it
+    # is the one that survives paraphrase: it matches an ACT ("publish",
+    # "export", "override a constraint") through a synonym set and a small word
+    # gap, so "sign it off and push it live" reaches the same rule as "approve
+    # and publish the slate".
+    #
+    # Still deterministic, still citing corpus C, still code deciding. See
+    # acts.py for why the lexicon was written from the policy's vocabulary
+    # rather than from the briefs that were failing.
+    if hits := acts.detect(text):
+        for verdict in acts.PRECEDENCE:
+            got = [h for h in hits if h.verdict == verdict]
+            if got:
+                return Triage(
+                    verdict, tuple(h.reason for h in got),
+                    tuple(dict.fromkeys(h.rule_id for h in got)),
+                    k=k, detected_injection=injected,
+                    decided_by="act:" + ",".join(h.act for h in got),
+                )
 
     # ── Stage 2 · the model classifies INTENT, for everything the rules missed
     #

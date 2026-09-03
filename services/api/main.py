@@ -35,12 +35,14 @@ from services.api.agent.graph import explainer, human_gate, new_run, run_to_gate
 from services.api.core import security as sec
 from services.api.core.rbac import Scope, ScopeViolation
 from services.api.agent.state import GateResolution, MerchandisingRun
+from services.api.core import db
 from services.api.core.rbac import Role
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     # on_event is deprecated; lifespan is the supported hook.
     sec.seed_demo_users()
+    db.init()          # migrates on connect; a dead DB degrades, never fails
     yield
 
 
@@ -87,6 +89,7 @@ def _audit(actor: str, action: str, detail: dict) -> None:
                   "action": action, **detail}
     while len(AUDIT) > MAX_AUDIT:
         AUDIT.popitem(last=False)
+    db.audit(actor, action, detail)   # survives the restart; AUDIT does not
 
 
 def current_user(dhawq_at: str | None = Cookie(default=None)) -> sec.User:
@@ -252,7 +255,10 @@ def demo_accounts() -> dict:
 
 @app.get("/audit")
 def audit_log(user: sec.User = Depends(requires(Scope.AUDIT_READ))) -> dict:
-    return {"entries": list(AUDIT.values())[-100:]}
+    # Durable first — the in-process ring is only the fallback's fallback.
+    rows = db.audit_tail(100)
+    return {"entries": rows or list(AUDIT.values())[-100:],
+            "backend": db.durable()["backend"]}
 
 
 @app.get("/health")
@@ -482,6 +488,8 @@ def submit_brief(body: BriefIn,
     _audit(user.user_id, "agent.run.submitted",
            {"run_id": run.run_id, "role": user.role.value})
     _remember(run)
+    db.save_run(run.run_id, user.user_id, user.role.value, run.phase.value,
+                run.goal, run.model_dump(mode="json"))
     _emit(run.run_id, "run.started", {"goal": run.goal,
                                       "scopes": sorted(s.value for s in run.granted_scopes)})
     return {"run_id": run.run_id}
@@ -489,9 +497,39 @@ def submit_brief(body: BriefIn,
 
 @app.get("/agent/runs/{run_id}")
 def get_run(run_id: str) -> dict:
-    if run_id not in _RUNS:
+    if run_id in _RUNS:
+        return _RUNS[run_id].model_dump(mode="json")
+    # Survives a restart when a database is attached. §13.1 says every run is
+    # logged AND replayable; a run that vanished with the process is neither.
+    rec = db.load_run(run_id)
+    if rec is None:
         raise HTTPException(404, "no such run")
-    return _RUNS[run_id].model_dump(mode="json")
+    return rec["state"]
+
+
+@app.get("/agent/runs/{run_id}/trace")
+def run_trace(run_id: str) -> dict:
+    """§7.9. Nested spans, not a flat log — "a flat log of an agent run is
+    nearly useless; plan drift and wrong-branch selection are only visible in
+    the nesting"."""
+    from services.api.agent import trace as tr
+    live = tr.tree(run_id)
+    if live:
+        return {"run_id": run_id, "spans": live, "source": "live",
+                "conventions": "OpenTelemetry GenAI semantic conventions"}
+    flat = db.load_trace(run_id)
+    if flat is None:
+        raise HTTPException(404, "no trace for that run")
+    by_parent: dict = {}
+    for sp in flat:
+        by_parent.setdefault(sp.get("parent_id"), []).append(sp)
+
+    def build(pid):
+        return [{**sp, "children": build(sp["span_id"])}
+                for sp in by_parent.get(pid, [])]
+
+    return {"run_id": run_id, "spans": build(None), "source": "stored",
+            "conventions": "OpenTelemetry GenAI semantic conventions"}
 
 
 @app.get("/agent/runs/{run_id}/events")

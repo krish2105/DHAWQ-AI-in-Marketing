@@ -221,10 +221,18 @@ export default function Deck() {
                 style={navBtn(i === slides.length - 1)}>→</button>
         <div style={{ display: "flex", gap: 4, flex: 1 }}>
           {slides.map((_, j) => (
-            <button key={j} onClick={() => setI(j)} aria-label={`Slide ${j + 1}`}
-                    style={{ flex: 1, blockSize: 3, border: "none", padding: 0,
-                             cursor: "pointer", borderRadius: 99,
+            // The visible bar is 3px; the HIT AREA is 30px. A 3px control is
+            // unclickable with a finger and barely clickable with a mouse —
+            // caught when a test click on it did nothing. Padding gives the
+            // target without changing the design.
+            <button key={j} onClick={() => setI(j)} aria-label={`Go to slide ${j + 1}`}
+                    aria-current={j === i ? "true" : undefined}
+                    style={{ flex: 1, border: "none", padding: "14px 0", margin: 0,
+                             cursor: "pointer", background: "transparent",
+                             display: "flex", alignItems: "center" }}>
+              <span style={{ inlineSize: "100%", blockSize: 3, borderRadius: 99,
                              background: j <= i ? "var(--signal)" : "var(--hairline)" }} />
+            </button>
           ))}
         </div>
         <span className="tnum" style={{ fontSize: "var(--step--1)", color: "var(--text-faint)" }}>

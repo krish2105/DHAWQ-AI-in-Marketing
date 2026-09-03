@@ -37,6 +37,8 @@ from services.api.agent.state import (
     Slate, SlotAssignment, SubTask, ToolCall,
 )
 from services.api.agent.tools import catalogue, invoke
+from services.api.agent.trace import Tracer
+from services.api.agent.trace import start as start_trace
 from services.api.agent.triage import triage
 from services.api.core.rbac import Role, Scope, effective_scopes
 
@@ -450,20 +452,59 @@ def run_to_gate(run: MerchandisingRun, max_iters: int = 20) -> MerchandisingRun:
     calling into LangGraph's runner, so a test failure points at DHAWQ's
     routing rather than at the framework's.
     """
+    tracer = start_trace(run.run_id)
     node = "supervisor"
-    for _ in range(max_iters):
-        if node == "supervisor":
-            run = supervisor(run)
-            node = route_from_supervisor(run)
-        elif node in ("retriever", "analyst", "merchandiser"):
-            run = {"retriever": retriever, "analyst": analyst,
-                   "merchandiser": merchandiser}[node](run)
-            node = "supervisor"
-        elif node == "critic":
-            run = critic_node(run)
-            node = route_from_critic(run)
-        else:
-            break
-        if run.phase in (Phase.GATED, Phase.DONE, Phase.FAILED):
-            break
+    with tracer.span("agent.run", "run", goal=run.goal[:160],
+                     caller_role=run.caller_role.value):
+        for _ in range(max_iters):
+            before = len(run.evidence), len(run.candidate_slates), len(run.rejections)
+            if node == "supervisor":
+                with tracer.span("supervisor", "node", phase=run.phase.value):
+                    run = supervisor(run)
+                    nxt = route_from_supervisor(run)
+                    # THE reasoning span §7.9 singles out. Plan drift is only
+                    # visible if the run records what it MEANT to do next.
+                    tracer.reasoning(
+                        plan="; ".join(t.description for t in run.plan)[:300] or "(none)",
+                        action=f"route -> {nxt}",
+                        observation=f"evidence={len(run.evidence)} "
+                                    f"slates={len(run.candidate_slates)}",
+                        next_decision=nxt)
+                node = nxt
+            elif node in ("retriever", "analyst", "merchandiser"):
+                with tracer.span(node, "node") as sp:
+                    run = {"retriever": retriever, "analyst": analyst,
+                           "merchandiser": merchandiser}[node](run)
+                    sp.attributes["evidence_added"] = len(run.evidence) - before[0]
+                    sp.attributes["slates_added"] = len(run.candidate_slates) - before[1]
+                node = "supervisor"
+            elif node == "critic":
+                with tracer.span("critic", "node",
+                                 round=run.critic_rounds + 1) as sp:
+                    run = critic_node(run)
+                    nxt = route_from_critic(run)
+                    sp.attributes["rejections_added"] = len(run.rejections) - before[2]
+                    tracer.reasoning(
+                        plan="judge the slate against 9 criteria",
+                        action=f"critic round {run.critic_rounds}",
+                        observation="; ".join(
+                            r.reason for r in run.rejections[before[2]:])[:300]
+                            or "no violations",
+                        next_decision=nxt)
+                node = nxt
+            else:
+                break
+            if run.phase in (Phase.GATED, Phase.DONE, Phase.FAILED):
+                break
+    _persist_trace(run.run_id, tracer)
     return run
+
+
+def _persist_trace(run_id: str, tracer: Tracer) -> None:
+    """Best effort. A trace that fails to store must not fail the run —
+    observability is evidence about the system, not part of its contract."""
+    try:
+        from services.api.core import db
+        db.save_trace(run_id, [s.as_dict() for s in tracer.spans])
+    except Exception:                              # noqa: BLE001
+        pass

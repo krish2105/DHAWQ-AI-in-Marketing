@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import TraceTimeline from "@/components/agent/TraceTimeline";
 import { apiPost, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
 import { RequireScope } from "@/components/ui/SignIn";
@@ -49,11 +50,12 @@ function AgentView() {
   const [brief, setBrief] = useState(EXAMPLES[0].brief);
   const [events, setEvents] = useState<Ev[]>([]);
   const [running, setRunning] = useState(false);
+  const [runId, setRunId] = useState<string | null>(null);
   const [err, setErr] = useState<ApiError | null>(null);
   const esRef = useRef<EventSource | null>(null);
 
   const submit = useCallback(async () => {
-    setEvents([]); setRunning(true); setErr(null);
+    setEvents([]); setRunning(true); setErr(null); setRunId(null);
     esRef.current?.close();
 
     const started = await apiPost<{ run_id: string }>("/api/agent/runs", { brief });
@@ -72,6 +74,7 @@ function AgentView() {
 
     es.addEventListener("run.completed", (e) => {
       push("run.completed")(e as MessageEvent); setRunning(false); es.close();
+      setRunId(run_id);   // the trace is complete only once the run is
     });
     es.onerror = () => {
       setRunning(false);
@@ -255,6 +258,8 @@ function AgentView() {
           )}
         </section>
       </div>
+
+      <TraceTimeline runId={runId} />
     </div>
   );
 }
