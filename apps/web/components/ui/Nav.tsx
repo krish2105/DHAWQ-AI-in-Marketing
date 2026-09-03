@@ -18,8 +18,13 @@ export function Nav() {
     <header
       style={{
         position: "sticky", insetBlockStart: 0, zIndex: 50,
-        display: "flex", alignItems: "center", gap: "var(--space-5)",
-        paddingInline: "var(--space-5)", paddingBlock: "var(--space-3)",
+        display: "flex", alignItems: "center", gap: "var(--space-4)",
+        paddingInline: "var(--space-4)", paddingBlock: "var(--space-3)",
+        // The route list overflowed off the right edge on a phone, cutting
+        // "Evaluate" in half with no way to reach it. The bar no longer wraps;
+        // the LINKS scroll horizontally while the brand and the theme toggle
+        // stay pinned, so every route is reachable at 360px.
+        maxInlineSize: "100vw", overflow: "hidden",
         borderBlockEnd: "1px solid var(--hairline)",
         background: "color-mix(in srgb, var(--ground) 86%, transparent)",
         backdropFilter: "blur(12px)",
@@ -28,14 +33,22 @@ export function Nav() {
       <Link
         href="/"
         style={{
-          textDecoration: "none", color: "var(--text)",
+          textDecoration: "none", color: "var(--text)", flex: "0 0 auto",
           fontWeight: 600, letterSpacing: "0.14em", fontSize: "var(--step--1)",
+          whiteSpace: "nowrap",
         }}
       >
         DHAWQ<span style={{ color: "var(--text-faint)", marginInlineStart: 8 }}>ذوق</span>
       </Link>
 
-      <nav aria-label="Primary" style={{ display: "flex", gap: "var(--space-4)" }}>
+      <nav
+        aria-label="Primary"
+        style={{
+          display: "flex", gap: "var(--space-4)", overflowX: "auto",
+          scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
+          minInlineSize: 0, flex: "1 1 auto",
+        }}
+      >
         {ROUTES.map((r) => {
           const active = path === r.href;
           return (
@@ -45,6 +58,7 @@ export function Nav() {
               aria-current={active ? "page" : undefined}
               style={{
                 textDecoration: "none", fontSize: "var(--step--1)",
+                whiteSpace: "nowrap",
                 color: active ? "var(--text)" : "var(--text-muted)",
                 borderBlockEnd: `1px solid ${active ? "var(--signal)" : "transparent"}`,
                 paddingBlockEnd: 2,
@@ -57,7 +71,7 @@ export function Nav() {
         })}
       </nav>
 
-      <div style={{ marginInlineStart: "auto" }}>
+      <div style={{ flex: "0 0 auto" }}>
         <ThemeToggle />
       </div>
     </header>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { apiPost, type ApiError } from "@/lib/api";
+import { ApiNotice } from "@/components/ui/ApiNotice";
 
 /*
  * The agent console (§12.6).
@@ -37,17 +39,16 @@ export default function AgentPage() {
   const [brief, setBrief] = useState(EXAMPLES[0].brief);
   const [events, setEvents] = useState<Ev[]>([]);
   const [running, setRunning] = useState(false);
+  const [err, setErr] = useState<ApiError | null>(null);
   const esRef = useRef<EventSource | null>(null);
 
   const submit = useCallback(async () => {
-    setEvents([]); setRunning(true);
+    setEvents([]); setRunning(true); setErr(null);
     esRef.current?.close();
 
-    const res = await fetch("/api/agent/runs", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brief }),
-    });
-    const { run_id } = await res.json();
+    const started = await apiPost<{ run_id: string }>("/api/agent/runs", { brief });
+    if (!started.ok) { setErr(started.error); setRunning(false); return; }
+    const { run_id } = started.data;
 
     // SSE — renders progressively, never blocks on a completed run (§12.7).
     const es = new EventSource(`/api/agent/runs/${run_id}/events`);
@@ -62,7 +63,19 @@ export default function AgentPage() {
     es.addEventListener("run.completed", (e) => {
       push("run.completed")(e as MessageEvent); setRunning(false); es.close();
     });
-    es.onerror = () => { setRunning(false); es.close(); };
+    es.onerror = () => {
+      setRunning(false);
+      es.close();
+      setEvents((prev) => {
+        if (prev.length === 0) {
+          setErr({
+            kind: "cold_start",
+            message: "The run stream closed before any event arrived. The API may be waking up — try again in a moment.",
+          });
+        }
+        return prev;
+      });
+    };
   }, [brief]);
 
   const rejections = events.filter((e) => e.type === "critic.rejected" || e.type === "triage.decided");
@@ -102,6 +115,12 @@ export default function AgentPage() {
           border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
           fontFamily: "inherit", fontSize: "var(--step-0)", lineHeight: 1.5,
         }} />
+
+      {err && (
+        <div style={{ marginBlockStart: "var(--space-4)" }}>
+          <ApiNotice error={err} onRetry={submit} />
+        </div>
+      )}
 
       <button onClick={submit} disabled={running}
         style={{

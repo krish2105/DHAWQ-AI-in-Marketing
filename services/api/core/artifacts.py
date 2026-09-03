@@ -92,8 +92,53 @@ def article_index() -> dict[str, int]:
     return {a: i for i, a in enumerate(canonical_ids())}
 
 
+@lru_cache(maxsize=1)
+def cohort_candidates() -> dict:
+    """Precomputed cohort candidates, keyed model -> segment -> [article_id].
+
+    The API reads these instead of fitting a recommender per request. Fitting
+    cost 952MB peak and OOM-killed the deployed instance; cohort candidates are
+    as static as every other artefact here, so they belong at build time.
+    """
+    return json.loads(
+        _require(PROCESSED / "cohorts" / "candidates.json",
+                 "06_precompute_cohorts.py").read_text())["candidates"]
+
+
+@lru_cache(maxsize=1)
+def cohort_segments() -> dict:
+    """Precomputed RFM aggregates and the projected CLV distribution."""
+    return json.loads(
+        _require(PROCESSED / "cohorts" / "segments.json",
+                 "06_precompute_cohorts.py").read_text())
+
+
+@lru_cache(maxsize=1)
+def cohort_simulations() -> dict:
+    """Precomputed slot simulations, keyed by segment."""
+    return json.loads(
+        _require(PROCESSED / "cohorts" / "simulations.json",
+                 "06_precompute_cohorts.py").read_text())
+
+
+@lru_cache(maxsize=1)
+def catalogue_facts() -> dict:
+    """Frozen head/tail split and mean price per article.
+
+    Derived from the training split, which does not change — so recomputing
+    them per request meant loading an 18MB parquet to answer a question whose
+    answer was already fixed at build time.
+    """
+    raw = json.loads(
+        _require(PROCESSED / "cohorts" / "catalogue.json",
+                 "06_precompute_cohorts.py").read_text())
+    return {"head": set(raw["head"]), "prices": raw["prices"],
+            "head_share": raw["head_share"]}
+
+
 def reset_cache() -> None:
     """Tests only — artefacts are immutable in normal operation."""
     for fn in (manifest, articles, customers, train, test, canonical_ids,
-               embeddings, article_index):
+               embeddings, article_index, cohort_candidates, cohort_segments,
+               cohort_simulations, catalogue_facts):
         fn.cache_clear()

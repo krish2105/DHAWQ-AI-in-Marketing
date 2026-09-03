@@ -1,0 +1,39 @@
+{
+  "pipeline": "cohorts_v1",
+  "generated_at": "2026-09-03T09:45:54+05:30",
+  "git_rev": "4be7d0c",
+  "python": "3.13.5",
+  "top_k": 200,
+  "cohort_sample": 400,
+  "models": [
+    "hybrid_weighted",
+    "hybrid_cascade",
+    "collaborative",
+    "content",
+    "popularity"
+  ],
+  "segments": {
+    "champions": 16771,
+    "at_risk": 4557,
+    "loyal": 10592,
+    "big_spenders": 27241,
+    "hibernating": 27173,
+    "promising": 16524,
+    "needs_attention": 16175
+  },
+  "why": "The API reads these instead of fitting at runtime. Fitting cost 952MB peak and OOM-killed a 512MB instance; cohort candidates are as static as every other artefact in DHAWQ, so they belong at build time. This serves the REAL hybrid's output, unlike the light mode it replaces, which substituted a weaker arm.",
+  "outputs": {
+    "candidates.json": {
+      "bytes": 98959,
+      "sha256": "d78654e64640ab4074863ebab417a89f2c0d1bea98fe9e7014ea9dab986277ee"
+    },
+    "segments.json": {
+      "bytes": 2550,
+      "sha256": "dbcdaa094f8cf4d1a9e273884157901beb0046674e157999221abf9c3a808b68"
+    },
+    "catalogue.json": {
+      "bytes": 352563,
+      "sha256": "bcafd1b9628ce925b109fa12b0255de0e0a14c8dc1ee5f9ee31e085e1686e6c5"
+    }
+  }
+}

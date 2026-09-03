@@ -127,30 +127,21 @@ def get(name: str) -> ToolSpec:
 
 # ── Implementations (all read-only) ──────────────────────────────────────────
 
-#: Free-tier instances have ~512MB. Fitting implicit ALS over 119,594 users x
-#: 13,548 items allocates ~60MB of user factors alone and peaks far higher, so
-#: on a small instance it OOMs and takes the service with it. DHAWQ_LIGHT
-#: substitutes the content arm, which needs only the 40MB embedding matrix.
+#: Fitting a recommender inside the API cost 952MB peak and OOM-killed the
+#: deployed 512MB instance. Cohort candidates are as static as every other
+#: artefact in DHAWQ, so they are precomputed by pipelines/06 and simply READ
+#: here. This serves the REAL hybrid's output — strictly better than the light
+#: mode it replaces, which substituted a weaker arm to save memory.
 #:
-#: This changes what the DEPLOYED DEMO serves; it does not change any reported
-#: number. The five-arm comparison in §9 is a build-time artefact computed on
-#: the full stack and shipped as JSON — the evaluate route reads that file, it
-#: does not recompute it. The substitution is surfaced on /health so nobody
-#: reads a light-mode slate as a full-stack result.
-LIGHT = os.environ.get("DHAWQ_LIGHT", "").lower() in ("1", "true", "yes")
-LIGHT_SUBSTITUTIONS = {
-    "collaborative": "content",
-    "hybrid_weighted": "content",
-    "hybrid_cascade": "content",
-}
+#: DHAWQ_FIT_AT_RUNTIME=1 restores in-process fitting for local work against a
+#: catalogue that has no precomputed artefact yet.
+FIT_AT_RUNTIME = os.environ.get("DHAWQ_FIT_AT_RUNTIME", "").lower() in ("1", "true", "yes")
 
 
 @lru_cache(maxsize=4)
 def _fitted(model_name: str):
     """Fit once per process. ALS takes ~30s; refitting per tool call would blow
     the wall-clock budget on its own."""
-    if LIGHT:
-        model_name = LIGHT_SUBSTITUTIONS.get(model_name, model_name)
     from services.api.core.artifacts import train
     from services.api.models.baseline import PopularityRecency
     from services.api.models.collaborative import ImplicitALS
@@ -183,7 +174,20 @@ def _recommend(args: RecommendIn) -> RecommendOut:
     """
     import numpy as np
 
-    from services.api.core.artifacts import canonical_ids, train
+    from services.api.core.artifacts import canonical_ids, cohort_candidates, train
+
+    # Precomputed path: no model, no fitting, no 42MB embedding matrix.
+    if not FIT_AT_RUNTIME:
+        segment = args.cohort_spec.get("segment", "champions")
+        table = cohort_candidates()
+        by_segment = table.get(args.model) or table.get("hybrid_weighted") or {}
+        ids = by_segment.get(segment) or next(iter(by_segment.values()), [])
+        ids = ids[: args.k]
+        return RecommendOut(
+            article_ids=ids,
+            scores=[1.0 - i / max(len(ids), 1) for i in range(len(ids))],
+            model=args.model,
+        )
 
     arm = _fitted(args.model)
     tr = train()
@@ -219,18 +223,16 @@ def _recommend(args: RecommendIn) -> RecommendOut:
 
 
 def _optimise_slots(args: OptimiseSlotsIn) -> OptimiseSlotsOut:
-    from services.api.core.artifacts import articles, train
-    from services.api.evaluate.bias import head_set
+    from services.api.core.artifacts import articles, catalogue_facts
     from services.api.marketing.slots import Candidate, optimise_slots
 
+    # Head/tail and prices come from the frozen catalogue facts, not from
+    # re-reading the transaction parquet. Same numbers, ~250MB less resident.
+    facts = catalogue_facts()
+    head, prices = facts["head"], facts["prices"]
     arts = articles()
-    head = head_set(train())
     meta = {r[0]: r for r in arts.select(
         "article_id", "product_type_name", "colour_group_name").iter_rows()}
-    prices = dict(
-        train().group_by("article_id").agg(__import__("polars").col("price").mean())
-        .iter_rows()
-    )
     cands = [
         Candidate(
             article_id=a, score=1.0 - i / max(len(args.candidate_ids), 1),
@@ -274,33 +276,31 @@ def _load_policy(args: BaseModel) -> PolicyOut:
 
 
 def _clv(args: CohortIn) -> dict:
-    from services.api.core.artifacts import train
-    from services.api.marketing.clv import (
-        clv, fit_bgnbd, fit_gamma_gamma, frequency_monetary_correlation, rfm_matrix,
-    )
-    summary = rfm_matrix(train())
-    bg, gg = fit_bgnbd(summary), fit_gamma_gamma(summary)
-    out = clv(summary, bg, gg)
-    # AGGREGATES ONLY — never individual rows.
+    """Projected CLV AGGREGATES. Never individual rows — POL-SEG-02.
+
+    Read from the precomputed artefact: BG/NBD is a Nelder-Mead fit over
+    118,914 customers and is not a per-tool-call cost.
+    """
+    from services.api.core.artifacts import cohort_segments
+
+    c = cohort_segments()["clv"]
     return {
-        "n_customers": out.height,
-        "mean_projected_clv": float(out.get_column("projected_clv").mean()),
-        "median_projected_clv": float(out.get_column("projected_clv").median()),
-        "mean_probability_alive": float(out.get_column("probability_alive").mean()),
-        "frequency_monetary_correlation": frequency_monetary_correlation(summary),
-        "independence_assumption_note": (
-            "Gamma-Gamma assumes frequency and monetary value are independent; "
-            "the observed correlation is reported so the assumption is visible."
-        ),
-        "language": "PROJECTED, not measured. No live A/B test exists.",
+        "n_customers": c["n_customers"],
+        "mean_projected_clv": c["projected_clv"]["mean"],
+        "median_projected_clv": c["projected_clv"]["median"],
+        "mean_probability_alive": c["probability_alive"]["mean"],
+        "frequency_monetary_correlation":
+            c["assumption_check"]["frequency_monetary_correlation"],
+        "independence_assumption_note": c["assumption_check"]["note"],
+        "language": c["language"],
     }
 
 
 def _rfm_segment(args: CohortIn) -> dict:
-    from services.api.core.artifacts import train
-    from services.api.marketing.rfm import rfm_table, segment_summary
-    summary = segment_summary(rfm_table(train()))
-    return {"segments": [dict(zip(summary.columns, r)) for r in summary.iter_rows()]}
+    """RFM aggregates, precomputed. Grouping 1.39M rows per tool call was the
+    other half of the memory that OOM-killed the deployed instance."""
+    from services.api.core.artifacts import cohort_segments
+    return cohort_segments()["rfm"]
 
 
 def _eval_report(args: EvalReportIn) -> dict:

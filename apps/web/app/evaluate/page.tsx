@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { apiGet, type ApiError } from "@/lib/api";
+import { ApiNotice } from "@/components/ui/ApiNotice";
 
 /*
  * The evaluation view (§12.6).
@@ -31,13 +33,31 @@ function Bar({ value, max, tone }: { value: number; max: number; tone: string })
 
 export default function EvaluatePage() {
   const [data, setData] = useState<any>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<ApiError | null>(null);
 
-  useEffect(() => {
-    fetch("/api/evaluate/latest").then((r) => r.json()).then(setData).catch((e) => setErr(String(e)));
+  const load = useCallback(() => {
+    setErr(null);
+    apiGet<any>("/api/evaluate/latest").then((r) =>
+      r.ok ? setData(r.data) : setErr(r.error));
   }, []);
 
-  if (err) return <div style={{ padding: "var(--space-8)", color: "var(--reject)" }}>{err}</div>;
+  useEffect(load, [load]);
+
+  // Previously this rendered String(e) — the raw "SyntaxError: The string did
+  // not match the expected pattern" from JSON.parse choking on an HTML error
+  // page. A parser message is not a user-facing state.
+  if (err) {
+    return (
+      <div style={{ padding: "var(--space-6)", maxInlineSize: 1320, marginInline: "auto" }}>
+        <h1 style={{ fontSize: "var(--step-3)", margin: 0, letterSpacing: "-0.03em" }}>
+          Evaluation
+        </h1>
+        <div style={{ marginBlockStart: "var(--space-5)" }}>
+          <ApiNotice error={err} onRetry={load} />
+        </div>
+      </div>
+    );
+  }
   if (!data) return <div className="skeleton" style={{ blockSize: 400, margin: "var(--space-6)" }} />;
 
   const recs = data.recommenders;

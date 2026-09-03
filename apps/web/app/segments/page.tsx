@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { apiGet, type ApiError } from "@/lib/api";
+import { ApiNotice } from "@/components/ui/ApiNotice";
 
 /* Segments (§12.6) — RFM cohorts and the projected CLV distribution.
    AGGREGATES ONLY. There is no endpoint that returns an individual customer,
@@ -14,11 +16,17 @@ const SECTION: React.CSSProperties = {
 export default function SegmentsPage() {
   const [rfm, setRfm] = useState<any>(null);
   const [clv, setClv] = useState<any>(null);
+  const [err, setErr] = useState<ApiError | null>(null);
 
-  useEffect(() => {
-    fetch("/api/segments/rfm").then((r) => r.json()).then(setRfm).catch(() => {});
-    fetch("/api/segments/clv").then((r) => r.json()).then(setClv).catch(() => {});
+  const load = useCallback(() => {
+    setErr(null);
+    apiGet<any>("/api/segments/rfm").then((r) =>
+      r.ok ? setRfm(r.data) : setErr(r.error));
+    apiGet<any>("/api/segments/clv").then((r) =>
+      r.ok ? setClv(r.data) : setErr(r.error));
   }, []);
+
+  useEffect(load, [load]);
 
   const maxSeg = rfm ? Math.max(...rfm.segments.map((s: any) => s.customers)) : 1;
   const maxBin = clv ? Math.max(...clv.histogram.map((h: any) => h.n)) : 1;
@@ -34,10 +42,16 @@ export default function SegmentsPage() {
         no endpoint here returns an individual customer.
       </p>
 
+      {err && (
+        <div style={{ marginBlockStart: "var(--space-5)" }}>
+          <ApiNotice error={err} onRetry={load} />
+        </div>
+      )}
+
       <section style={{ marginBlockStart: "var(--space-6)" }}>
         <h2 style={SECTION}>RFM segments</h2>
         {!rfm ? (
-          <div className="skeleton" style={{ blockSize: 200, borderRadius: 8 }} />
+          err ? null : <div className="skeleton" style={{ blockSize: 200, borderRadius: 8 }} />
         ) : (
           <div style={{ display: "grid", gap: 8, maxInlineSize: 720 }}>
             {rfm.segments.map((s: any) => (
@@ -71,7 +85,7 @@ export default function SegmentsPage() {
       <section style={{ marginBlockStart: "var(--space-7)" }}>
         <h2 style={SECTION}>Projected CLV distribution</h2>
         {!clv ? (
-          <div className="skeleton" style={{ blockSize: 180, borderRadius: 8 }} />
+          err ? null : <div className="skeleton" style={{ blockSize: 180, borderRadius: 8 }} />
         ) : (
           <>
             <div style={{ display: "flex", gap: "var(--space-6)", flexWrap: "wrap", marginBlockEnd: "var(--space-5)" }}>

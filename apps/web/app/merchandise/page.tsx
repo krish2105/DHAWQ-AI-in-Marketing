@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { apiGet, type ApiError } from "@/lib/api";
+import { ApiNotice } from "@/components/ui/ApiNotice";
 
 /* Merchandise view — the policy the whole constraint layer enforces, readable
    in full. Corpus C is LOADED, not retrieved (§8.2), so there is nothing to
@@ -49,15 +51,23 @@ export default function MerchandisePage() {
   const [sim, setSim] = useState<any>(null);
   const [segment, setSegment] = useState("champions");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<ApiError | null>(null);
 
-  useEffect(() => {
-    fetch("/api/merchandise/policy").then((r) => r.json()).then(setPolicy).catch(() => {});
+  const load = useCallback(() => {
+    setErr(null);
+    apiGet<any>("/api/merchandise/policy").then((r) =>
+      r.ok ? setPolicy(r.data) : setErr(r.error));
   }, []);
+
+  useEffect(load, [load]);
 
   useEffect(() => {
     setBusy(true);
-    fetch(`/api/merchandise/simulate?k=12&segment=${segment}`)
-      .then((r) => r.json()).then(setSim).catch(() => setSim(null))
+    apiGet<any>(`/api/merchandise/simulate?k=12&segment=${segment}`)
+      .then((r) => {
+        if (r.ok) { setSim(r.data); setErr(null); }
+        else { setSim(null); setErr(r.error); }
+      })
       .finally(() => setBusy(false));
   }, [segment]);
 
@@ -91,7 +101,9 @@ export default function MerchandisePage() {
           ))}
         </div>
 
-        {busy || !sim?.decomposition ? (
+        {err ? (
+          <ApiNotice error={err} onRetry={load} />
+        ) : busy || !sim?.decomposition ? (
           <div className="skeleton" style={{ blockSize: 210, borderRadius: 8 }} />
         ) : (
           <>
