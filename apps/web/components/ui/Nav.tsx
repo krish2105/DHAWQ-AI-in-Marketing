@@ -47,9 +47,17 @@ export function Nav() {
       <nav
         aria-label="Primary"
         style={{
-          display: "flex", gap: "var(--space-4)", overflowX: "auto",
+          // Gap shrinks before the bar starts clipping. At 800px the fixed
+          // 16px gap pushed the last route half off the edge — reachable by
+          // scrolling, but a half-word reads as broken, not as scrollable.
+          display: "flex", gap: "clamp(10px, 2vw, var(--space-4))",
+          overflowX: "auto",
           scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
           minInlineSize: 0, flex: "1 1 auto",
+          // When it DOES have to scroll, the trailing fade says so.
+          maskImage: "linear-gradient(to right, #000 calc(100% - 24px), transparent)",
+          WebkitMaskImage:
+            "linear-gradient(to right, #000 calc(100% - 24px), transparent)",
         }}
       >
         {ROUTES.map((r) => {
