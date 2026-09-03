@@ -11,8 +11,28 @@ merchandising copilot whose **refusals are as visible as its output**.
 > No model in DHAWQ emits a score, a rank, a revenue figure, a CLV or a
 > coverage number — those come from functions with unit tests.
 
+**Live:** https://dhawq-krishnamathur008-1499s-projects.vercel.app
+**API:** https://dhawq-api.onrender.com/health
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and [PLAN.md](PLAN.md)
 for the executable plan.
+
+### Deployment notes, stated rather than assumed
+
+The API runs in **light mode** on its free instance: the collaborative and
+hybrid arms are substituted with the content arm, because fitting implicit ALS
+over 119,594 x 13,548 does not fit in ~512MB. `/health` reports this, the
+substitution map and the reason.
+
+**No reported metric is affected.** The five-arm comparison is a build-time
+artefact computed on the full stack and shipped as JSON; `/evaluate` reads that
+file rather than recomputing it. What changes is only what the live demo serves
+when you press a button.
+
+Render free web services sleep after inactivity, so the first request after a
+quiet period pays a cold start. Confirm the current free-tier terms before a
+grading window and budget a starter instance or a keep-warm ping if a cold
+start would be a problem.
 
 ---
 
