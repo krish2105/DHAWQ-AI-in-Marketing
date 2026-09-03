@@ -13,6 +13,7 @@ frozen. A tool that can be added at runtime is a tool an injection can add.
 
 from __future__ import annotations
 
+import os
 import time
 import uuid
 from functools import lru_cache
@@ -126,10 +127,30 @@ def get(name: str) -> ToolSpec:
 
 # ── Implementations (all read-only) ──────────────────────────────────────────
 
+#: Free-tier instances have ~512MB. Fitting implicit ALS over 119,594 users x
+#: 13,548 items allocates ~60MB of user factors alone and peaks far higher, so
+#: on a small instance it OOMs and takes the service with it. DHAWQ_LIGHT
+#: substitutes the content arm, which needs only the 40MB embedding matrix.
+#:
+#: This changes what the DEPLOYED DEMO serves; it does not change any reported
+#: number. The five-arm comparison in §9 is a build-time artefact computed on
+#: the full stack and shipped as JSON — the evaluate route reads that file, it
+#: does not recompute it. The substitution is surfaced on /health so nobody
+#: reads a light-mode slate as a full-stack result.
+LIGHT = os.environ.get("DHAWQ_LIGHT", "").lower() in ("1", "true", "yes")
+LIGHT_SUBSTITUTIONS = {
+    "collaborative": "content",
+    "hybrid_weighted": "content",
+    "hybrid_cascade": "content",
+}
+
+
 @lru_cache(maxsize=4)
 def _fitted(model_name: str):
     """Fit once per process. ALS takes ~30s; refitting per tool call would blow
     the wall-clock budget on its own."""
+    if LIGHT:
+        model_name = LIGHT_SUBSTITUTIONS.get(model_name, model_name)
     from services.api.core.artifacts import train
     from services.api.models.baseline import PopularityRecency
     from services.api.models.collaborative import ImplicitALS

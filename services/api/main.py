@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import uuid
 from datetime import datetime
@@ -37,7 +38,14 @@ app = FastAPI(title="DHAWQ", version="1.0.0",
 app.add_middleware(
     CORSMiddleware,
     # Explicit allowlist, never ["*"] with credentials (§13.1).
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    # Explicit allowlist, never ["*"] with credentials (§13.1). The deployed
+    # origin is injected rather than hardcoded so a fork cannot inherit it.
+    allow_origins=[
+        o for o in [
+            "http://localhost:3000", "http://127.0.0.1:3000",
+            os.environ.get("ALLOWED_ORIGIN"),
+        ] if o
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
@@ -75,7 +83,26 @@ def _emit(run_id: str, type_: str, payload: dict) -> None:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "service": "dhawq"}
+    """Health, and an honest statement of what this instance is serving.
+
+    `light_mode` is reported because a light-mode slate is NOT a full-stack
+    slate, and a reader who cannot tell the difference will draw the wrong
+    conclusion from it.
+    """
+    from services.api.agent.tools import LIGHT, LIGHT_SUBSTITUTIONS
+
+    return {
+        "ok": True, "service": "dhawq",
+        "light_mode": LIGHT,
+        "light_mode_note": (
+            "Collaborative and hybrid arms are substituted with the content arm "
+            "on this instance because ALS does not fit in free-tier memory. "
+            "Reported metrics are unaffected — they are build-time artefacts, "
+            "not recomputed here."
+        ) if LIGHT else None,
+        "substitutions": LIGHT_SUBSTITUTIONS if LIGHT else {},
+        "llm_provider": os.environ.get("DHAWQ_LLM_PROVIDER", "auto"),
+    }
 
 
 @app.get("/space/manifest")

@@ -1,4 +1,20 @@
 data/
+
+# The API's frozen artefacts ARE committed — Render builds from git, so the
+# deterministic core has to travel with the code. 64MB total, unmodified, so
+# the deployed numbers are identical to the local ones. The 28GB H&M source
+# and the 8.6MB atlas stay out: the atlas is served from Vercel's CDN, and
+# nothing at runtime reads raw H&M.
+!data/processed/
+!data/processed/articles.parquet
+!data/processed/transactions_train.parquet
+!data/processed/transactions_test.parquet
+!data/processed/embeddings/
+!data/processed/embeddings/clip_image.npy
+!data/processed/embeddings/article_ids.json
+!data/processed/graph/
+!data/processed/graph/edges.parquet
+!data/processed/graph/nodes.parquet
 *.zip
 *.npy
 *.parquet
