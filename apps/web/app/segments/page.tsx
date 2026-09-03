@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import Link from "next/link";
 
 /* Segments (§12.6) — RFM cohorts and the projected CLV distribution.
    AGGREGATES ONLY. There is no endpoint that returns an individual customer,
@@ -55,7 +56,9 @@ export default function SegmentsPage() {
         ) : (
           <div style={{ display: "grid", gap: 8, maxInlineSize: 720 }}>
             {rfm.segments.map((s: any) => (
-              <div key={s.segment} className="row-bar">
+              <Link key={s.segment} href={`/merchandise?segment=${s.segment}`}
+                    className="row-bar seg-row"
+                    title={`Simulate a slate for ${s.segment.replace(/_/g, " ")}`}>
                 <span className="row-label">{s.segment.replace(/_/g, " ")}</span>
                 <div className="bar-track">
                   <div className="bar-fill"
@@ -69,7 +72,7 @@ export default function SegmentsPage() {
                       title="mean shopping occasions">
                   {s.mean_frequency}×
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         )}

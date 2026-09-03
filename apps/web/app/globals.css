@@ -188,3 +188,20 @@ html, body {
 
 /* Wide content scrolls inside its own container; the page body never does. */
 .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Segment rows are navigation: they jump to that cohort's slot simulation. */
+.seg-row {
+  text-decoration: none;
+  color: inherit;
+  padding-block: 3px;
+  padding-inline: var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.seg-row:hover { background: var(--surface); }
+.seg-row:hover .bar-fill { background: var(--signal); filter: brightness(1.15); }
+
+/* A slot is inspectable — hovering says which garment sits there. */
+.slot { transition: border-color var(--dur-fast), transform var(--dur-fast) var(--ease-out); }
+.slot:hover { border-color: var(--signal) !important; transform: translateY(-2px); }

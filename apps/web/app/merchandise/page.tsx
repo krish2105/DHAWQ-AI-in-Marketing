@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import { useSearchParams } from "next/navigation";
 
 /* Merchandise view — the policy the whole constraint layer enforces, readable
    in full. Corpus C is LOADED, not retrieved (§8.2), so there is nothing to
@@ -24,6 +25,8 @@ function Delta({ label, value, hint }: { label: string; value: number; hint?: st
 }
 
 function Slate({ title, side }: { title: string; side: any }) {
+  // Each slot names the article it holds, so the comparison is inspectable
+  // rather than three grids of numbered boxes.
   return (
     <div>
       <div style={{ fontSize: "var(--step--1)", color: "var(--text-muted)", marginBlockEnd: 8 }}>
@@ -31,13 +34,14 @@ function Slate({ title, side }: { title: string; side: any }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4 }}>
         {side.slate.map((a: any) => (
-          <div key={a.article_id} title={`${a.prod_name ?? a.article_id} · ${a.product_type_name ?? ""}`}
+          <div key={a.article_id} className="mono slot"
+               title={`${a.prod_name ?? a.article_id}\n${a.product_type_name ?? ""} · ${a.colour_group_name ?? ""}\n${a.is_long_tail ? "long tail" : "head"}`}
                style={{
                  aspectRatio: "1", borderRadius: 4, fontSize: 9,
                  display: "grid", placeItems: "center", color: "var(--text-faint)",
                  background: "var(--surface)",
                  border: `1px solid ${a.is_long_tail ? "var(--tail)" : "var(--hairline)"}`,
-               }} className="mono">
+               }}>
             {a.position}
           </div>
         ))}
@@ -46,10 +50,22 @@ function Slate({ title, side }: { title: string; side: any }) {
   );
 }
 
+/* useSearchParams opts a route out of static prerendering unless it sits behind
+   a Suspense boundary — Next builds the shell, then fills the param-dependent
+   part on the client. Without it the whole page fails to prerender. */
 export default function MerchandisePage() {
+  return (
+    <Suspense fallback={<div className="skeleton" style={{ blockSize: 320, margin: "var(--space-6)", borderRadius: 8 }} />}>
+      <MerchandiseView />
+    </Suspense>
+  );
+}
+
+function MerchandiseView() {
   const [policy, setPolicy] = useState<any>(null);
   const [sim, setSim] = useState<any>(null);
-  const [segment, setSegment] = useState("champions");
+  const params = useSearchParams();
+  const [segment, setSegment] = useState(params.get("segment") ?? "champions");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<ApiError | null>(null);
 

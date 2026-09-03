@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import { Frontier } from "@/components/evaluate/Frontier";
+import { ColdStart } from "@/components/evaluate/ColdStart";
 
 /*
  * The evaluation view (§12.6).
@@ -158,6 +160,29 @@ export default function EvaluatePage() {
       {recs && (
         <section style={{ marginBlockStart: "var(--space-8)" }}>
           <h2 style={SECTION}>The accuracy–coverage frontier</h2>
+          <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                      maxInlineSize: "70ch", marginBlockEnd: "var(--space-4)", lineHeight: 1.6 }}>
+            Plotted rather than tabulated, deliberately. A table lets you read
+            the NDCG column and leave the coverage column behind, which is the
+            misreading §9 exists to prevent.
+          </p>
+          <Frontier points={recs.frontier.map((f: any) => ({
+            ...f, popularity_lift: recs.results[f.model]?.bias?.popularity_lift,
+          }))} />
+
+          <h2 style={{ ...SECTION, marginBlockStart: "var(--space-7)" }}>
+            Cold-start curve — NDCG@10 by training history depth
+          </h2>
+          <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                      maxInlineSize: "70ch", marginBlockEnd: "var(--space-4)", lineHeight: 1.6 }}>
+            The shape is the point. Popularity slopes DOWN as history grows —
+            new customers buy bestsellers — while the personalised arms start at
+            zero and climb. Personalisation that only works for heavy buyers is
+            a limitation, not a footnote.
+          </p>
+          <ColdStart results={recs.results} />
+
+          <h2 style={{ ...SECTION, marginBlockStart: "var(--space-7)" }}>All metrics</h2>
           <div className="scroll-x">
             <table style={{ inlineSize: "100%", borderCollapse: "collapse", minInlineSize: 660 }}>
               <thead>
