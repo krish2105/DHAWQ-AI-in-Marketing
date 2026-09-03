@@ -199,10 +199,23 @@ def optimise_slots(
             report.repairs.append(f"ILD {ild:.3f} < floor {min_ild}")
 
     # POL-SLT-03 — never pad. Return fewer slots and name what bound.
+    #
+    # POL-SLT-03 IS NOW ALWAYS RECORDED, not only when nothing else bound.
+    # Found by slate_audit: six of 210 audited slates shipped underfilled with
+    # POL-SLT-03 absent from binding_constraints, because POL-LT-01 had already
+    # bound and the old guard skipped it. A consumer checking whether the slate
+    # declared its own breach saw nothing — a SILENT non-compliance, which is
+    # the one failure mode the escalation path exists to make impossible.
+    #
+    # "insufficient_candidates" is kept as the cause but demoted to a repair
+    # note: it is not a rule id, so nothing can cite it, and criterion 1 exists
+    # precisely to stop unciteable strings being treated as grounds.
     if len(chosen) < k:
         report.underfilled = True
-        if not report.binding_constraints:
-            report.binding_constraints.append("insufficient_candidates")
+        report.binding_constraints.append("POL-SLT-03")
+        report.repairs.append(
+            f"underfilled {len(chosen)}/{k}: insufficient candidates survived "
+            f"the constraints")
 
     report.filled_k = len(chosen)
     report.long_tail_share = got_tail / len(chosen) if chosen else 0.0

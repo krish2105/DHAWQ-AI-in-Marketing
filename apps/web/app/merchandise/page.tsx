@@ -5,6 +5,7 @@ import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
 import { RequireScope } from "@/components/ui/SignIn";
 import { SessionLift, GranularityCurve } from "@/components/evaluate/SessionLift";
+import OperatingCase from "@/components/merchandise/OperatingCase";
 import { useSearchParams } from "next/navigation";
 
 /* Merchandise view — the policy the whole constraint layer enforces, readable
@@ -154,6 +155,8 @@ function MerchandiseView() {
           <GranularityCurve curve={lift.granularity_curve} />
         </section>
       )}
+
+      <OperatingCase />
 
       <section style={{ marginBlock: "var(--space-6)" }}>
         <h2 style={{

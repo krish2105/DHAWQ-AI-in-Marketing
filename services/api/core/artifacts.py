@@ -129,6 +129,14 @@ def cohort_simulations() -> dict:
 
 
 @lru_cache(maxsize=1)
+def operating_case() -> dict:
+    """Measured inputs for the cost case (09_operating_case.py)."""
+    return json.loads(
+        _require(PROCESSED / "cohorts" / "operating_case.json",
+                 "09_operating_case.py").read_text())
+
+
+@lru_cache(maxsize=1)
 def catalogue_facts() -> dict:
     """Frozen head/tail split and mean price per article.
 

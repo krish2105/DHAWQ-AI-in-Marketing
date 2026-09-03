@@ -1,0 +1,3394 @@
+{
+  "measured": {
+    "slates_audited": 210,
+    "cohorts": 35,
+    "slate_sizes": [
+      8,
+      10,
+      12,
+      16,
+      20,
+      24
+    ],
+    "ungoverned_breach_rate": 1.0,
+    "governed_breach_rate": 0.5571,
+    "governed_escalated_rate": 0.5571,
+    "governed_silent_breach_rate": 0.0,
+    "breaches_prevented": 93,
+    "breaches_prevented_or_escalated": 210,
+    "mean_violations_per_ungoverned_slate": 2.571,
+    "ungoverned_by_rule": {
+      "POL-DIV-03": 195,
+      "POL-LT-01": 160,
+      "POL-DIV-02": 134,
+      "POL-PRC-01": 51
+    },
+    "governed_by_rule": {
+      "POL-LT-01": 111,
+      "POL-SLT-03": 6
+    },
+    "silent_by_rule": {},
+    "by_model": {
+      "hybrid_weighted": {
+        "n": 42,
+        "escalated": 1,
+        "escalation_rate": 0.0238,
+        "cohort_pool_tail_share": 0.3686
+      },
+      "hybrid_cascade": {
+        "n": 42,
+        "escalated": 30,
+        "escalation_rate": 0.7143,
+        "cohort_pool_tail_share": 0.0307
+      },
+      "collaborative": {
+        "n": 42,
+        "escalated": 39,
+        "escalation_rate": 0.9286,
+        "cohort_pool_tail_share": 0.0036
+      },
+      "content": {
+        "n": 42,
+        "escalated": 5,
+        "escalation_rate": 0.119,
+        "cohort_pool_tail_share": 0.6386
+      },
+      "popularity": {
+        "n": 42,
+        "escalated": 42,
+        "escalation_rate": 1.0,
+        "cohort_pool_tail_share": 0.0
+      }
+    },
+    "by_slate_size": {
+      "8": {
+        "n": 35,
+        "escalated": 19,
+        "escalation_rate": 0.5429
+      },
+      "10": {
+        "n": 35,
+        "escalated": 18,
+        "escalation_rate": 0.5143
+      },
+      "12": {
+        "n": 35,
+        "escalated": 19,
+        "escalation_rate": 0.5429
+      },
+      "16": {
+        "n": 35,
+        "escalated": 20,
+        "escalation_rate": 0.5714
+      },
+      "20": {
+        "n": 35,
+        "escalated": 20,
+        "escalation_rate": 0.5714
+      },
+      "24": {
+        "n": 35,
+        "escalated": 21,
+        "escalation_rate": 0.6
+      }
+    }
+  },
+  "method": "Ungoverned = top-k by score, which is exactly what a revenue-ranked module produces and exactly what the optimiser starts from. Governed = the same candidate pool through optimise_slots. Both audited by slate_audit.audit(), which reimplements corpus C against slate CONTENTS rather than reading the optimiser's own report \u2014 an auditor that called the optimiser could only ever agree with it.",
+  "caveat": "A breach here is a slate that WOULD have shipped non-compliant, not a breach that did ship. DHAWQ has never run in production, so this measures the failure rate of the alternative, not damage avoided.",
+  "rows": [
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 20,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "at_risk",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 10,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 12,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 20,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "big_spenders",
+      "k": 24,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 20,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "champions",
+      "k": 24,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "hibernating",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 8,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 10,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 12,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 20,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "loyal",
+      "k": 24,
+      "ungoverned_violations": 4,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "needs_attention",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_weighted",
+      "segment": "promising",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 8,
+      "ungoverned_violations": 1,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 10,
+      "ungoverned_violations": 1,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "at_risk",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "big_spenders",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "champions",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "hibernating",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 20,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "loyal",
+      "k": 24,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "needs_attention",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "hybrid_cascade",
+      "segment": "promising",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 8,
+      "ungoverned_violations": 1,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 10,
+      "ungoverned_violations": 1,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "at_risk",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "big_spenders",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "champions",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 12,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "hibernating",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 16,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 20,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "loyal",
+      "k": 24,
+      "ungoverned_violations": 4,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 10,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "needs_attention",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "collaborative",
+      "segment": "promising",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "at_risk",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "big_spenders",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 8,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 10,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 16,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 20,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "champions",
+      "k": 24,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "hibernating",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [
+        "POL-SLT-03"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 8,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 16,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 20,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "loyal",
+      "k": 24,
+      "ungoverned_violations": 3,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-PRC-01"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 12,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "needs_attention",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 8,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 10,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 12,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 16,
+      "ungoverned_violations": 1,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "content",
+      "segment": "promising",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 0,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03"
+      ],
+      "governed_rules": [],
+      "silent_violations": 0,
+      "escalated": false
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "at_risk",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "big_spenders",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "champions",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "hibernating",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "loyal",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "needs_attention",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 8,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 10,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 12,
+      "ungoverned_violations": 3,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-02",
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 16,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 20,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    },
+    {
+      "model": "popularity",
+      "segment": "promising",
+      "k": 24,
+      "ungoverned_violations": 2,
+      "governed_violations": 1,
+      "ungoverned_rules": [
+        "POL-DIV-03",
+        "POL-LT-01"
+      ],
+      "governed_rules": [
+        "POL-LT-01"
+      ],
+      "silent_violations": 0,
+      "escalated": true
+    }
+  ]
+}

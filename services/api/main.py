@@ -379,6 +379,51 @@ def latest_eval() -> dict:
     }
 
 
+@app.get("/merchandise/operating-case")
+def operating_case() -> dict:
+    """The cost side, with measured and assumed kept apart.
+
+    Deliberately unauthenticated and alongside session-lift, because the two
+    are one argument: the revenue case is weak and reported as weak, and this
+    is what remains true regardless. Splitting them across permission levels
+    would let a reader meet one without the other.
+    """
+    from services.api.core.artifacts import operating_case as oc_artifact
+    from services.api.marketing.operating_case import compute
+
+    try:
+        art = oc_artifact()
+    except Exception:                                  # noqa: BLE001
+        raise HTTPException(503, "operating case artefact not built")
+
+    m = art["measured"]
+    # The escalation rate the cost model runs on is SLATE-level and measured,
+    # not chosen: the share of governed slates that declare a breach and reach
+    # a human. Using the best arm rather than the mean would be picking the
+    # number that flatters; the mean across all five arms is reported, and the
+    # per-arm spread sits next to it because it is 40x wide.
+    case = compute({
+        "escalation_rate": m["governed_escalated_rate"],
+        "ungoverned_breach_rate": m["ungoverned_breach_rate"],
+        "silent_breach_rate": m["governed_silent_breach_rate"],
+        "slates_audited": m["slates_audited"],
+        "cohorts": m["cohorts"],
+        "mean_violations_per_ungoverned_slate":
+            m["mean_violations_per_ungoverned_slate"],
+        "ungoverned_by_rule": m["ungoverned_by_rule"],
+        "by_model": m["by_model"],
+        "by_slate_size": m["by_slate_size"],
+    })
+    return {
+        "measured": case.measured,
+        "assumptions": case.assumptions,
+        "per_100_slates": case.per_100_slates,
+        "break_even": case.break_even,
+        "caveats": case.caveats,
+        "method": art["method"],
+    }
+
+
 @app.get("/merchandise/session-lift")
 def session_lift_report() -> dict:
     """What personalising each visitor's page is worth, with confidence

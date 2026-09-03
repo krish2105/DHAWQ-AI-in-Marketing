@@ -1,26 +1,41 @@
-data/
-
+# THIS ALLOWLIST DID NOT WORK, and the artefacts already in the repo were
+# force-added past it. "data/" excludes the DIRECTORY, so git never descends
+# into it and no "!data/..." line below can re-include anything — git's own
+# rule: a file cannot be re-included if a parent directory is excluded. It
+# looked correct, and every new artefact silently failed to ship until someone
+# noticed a 404 in production. Found when operating_case.json would not add.
+#
+# The fix is to exclude CONTENTS with /* at each level and re-include the one
+# directory we want to descend into, level by level.
+#
 # The API's frozen artefacts ARE committed — Render builds from git, so the
-# deterministic core has to travel with the code. 64MB total, unmodified, so
-# the deployed numbers are identical to the local ones. The 28GB H&M source
-# and the 8.6MB atlas stay out: the atlas is served from Vercel's CDN, and
-# nothing at runtime reads raw H&M.
-!data/processed/
-!data/processed/articles.parquet
-!data/processed/transactions_train.parquet
-!data/processed/transactions_test.parquet
-!data/processed/embeddings/
-!data/processed/embeddings/clip_image.npy
-!data/processed/embeddings/article_ids.json
-!data/processed/graph/
-!data/processed/graph/edges.parquet
-!data/processed/graph/nodes.parquet
-!data/processed/cohorts/
-!data/processed/cohorts/candidates.json
-!data/processed/cohorts/segments.json
-!data/processed/cohorts/simulations.json
-!data/processed/cohorts/catalogue.json
-!data/processed/cohorts/clv_holdout.json
+# deterministic core has to travel with the code. ~64MB total, unmodified, so
+# the deployed numbers are identical to the local ones. The 28GB H&M source and
+# the 8.6MB atlas stay out: the atlas is served from Vercel's CDN, and nothing
+# at runtime reads raw H&M.
+/data/*
+!/data/processed/
+/data/processed/*
+!/data/processed/articles.parquet
+!/data/processed/transactions_train.parquet
+!/data/processed/transactions_test.parquet
+!/data/processed/embeddings/
+/data/processed/embeddings/*
+!/data/processed/embeddings/clip_image.npy
+!/data/processed/embeddings/article_ids.json
+!/data/processed/graph/
+/data/processed/graph/*
+!/data/processed/graph/edges.parquet
+!/data/processed/graph/nodes.parquet
+!/data/processed/cohorts/
+/data/processed/cohorts/*
+!/data/processed/cohorts/candidates.json
+!/data/processed/cohorts/segments.json
+!/data/processed/cohorts/simulations.json
+!/data/processed/cohorts/catalogue.json
+!/data/processed/cohorts/clv_holdout.json
+!/data/processed/cohorts/operating_case.json
+
 *.zip
 *.npy
 *.parquet
