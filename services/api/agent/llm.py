@@ -71,7 +71,8 @@ class LLMProvider(Protocol):
     model: str
 
     def complete(self, system: str, messages: list[Message], *,
-                 max_tokens: int = 1024, temperature: float = 0.0) -> LLMResponse: ...
+                 max_tokens: int = 1024, temperature: float = 0.0,
+                 schema: dict | None = None) -> LLMResponse: ...
 
     def available(self) -> bool: ...
 
@@ -102,7 +103,8 @@ class StubProvider:
         return True
 
     def complete(self, system: str, messages: list[Message], *,
-                 max_tokens: int = 1024, temperature: float = 0.0) -> LLMResponse:
+                 max_tokens: int = 1024, temperature: float = 0.0,
+                 schema: dict | None = None) -> LLMResponse:
         t0 = time.perf_counter()
         prompt = "\n".join(m.content for m in messages)
         task = self._detect_task(system)
@@ -143,11 +145,16 @@ class OllamaProvider:
     #: largest. The mix is recorded in every run manifest, per §10.2's
     #: disclosure rule — a metric produced by a 3B model and one produced by an
     #: 8B model are not the same metric.
+    #: Measured on the golden set's paraphrase stratum, not assumed. qwen3 runs
+    #: a thinking pass before answering and returned EMPTY output under a
+    #: 200-token cap, scoring 0-9% where llama3.2:3b scored 22% at a tenth the
+    #: latency. Bigger is not better when the budget is small and the task is a
+    #: four-way classification.
     TIERS = {
-        "classify":  "llama3.2:3b",   # 6-way routing, constraint extraction
-        "extract":   "qwen3:4b",      # structured field extraction
+        "classify":  "llama3.2:3b",   # routing, triage intent — fast, no thinking pass
+        "extract":   "llama3.2:3b",
         "generate":  "qwen3:8b",      # retrieval synthesis, explanation
-        "judge":     "qwen3:8b",      # supervisor plan, critic criteria 1/2/6/7/8
+        "judge":     "qwen3:8b",      # critic criteria 1/2/6/7/8
     }
 
     def __init__(self, model: str = "qwen3:8b", host: str | None = None,
@@ -167,7 +174,8 @@ class OllamaProvider:
             return False
 
     def complete(self, system: str, messages: list[Message], *,
-                 max_tokens: int = 1024, temperature: float = 0.0) -> LLMResponse:
+                 max_tokens: int = 1024, temperature: float = 0.0,
+                 schema: dict | None = None) -> LLMResponse:
         import urllib.error
         import urllib.request
 
@@ -180,6 +188,13 @@ class OllamaProvider:
             # sampling noise would dominate it.
             "options": {"temperature": temperature, "num_predict": max_tokens},
         }
+        # CONSTRAINED DECODING, not a hopeful instruction. Asked for JSON in the
+        # prompt, a 3B model answers "refuse" — the right verdict in the wrong
+        # shape, which parse_structured then rejects as malformed. Passing the
+        # schema makes the shape a property of the decode instead of something
+        # the model has to remember.
+        if schema is not None:
+            payload["format"] = schema
         req = urllib.request.Request(
             f"{self.host}/api/chat",
             data=json.dumps(payload).encode(),
@@ -226,7 +241,8 @@ class AnthropicProvider:
         return self._client
 
     def complete(self, system: str, messages: list[Message], *,
-                 max_tokens: int = 1024, temperature: float = 0.0) -> LLMResponse:
+                 max_tokens: int = 1024, temperature: float = 0.0,
+                 schema: dict | None = None) -> LLMResponse:
         t0 = time.perf_counter()
         # Corpus C is byte-stable and the largest block in the run, so it is the
         # cache prefix. The volatile `goal` restatement lives in messages, after

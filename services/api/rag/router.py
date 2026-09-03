@@ -128,7 +128,8 @@ def classify_shape(query: str, provider=None) -> ShapeClassification:
     provider = provider or for_task("classify")
     try:
         resp = provider.complete(CLASSIFY_SYSTEM, [Message("user", query)],
-                                 max_tokens=150, temperature=0.0)
+                                 max_tokens=150, temperature=0.0,
+                                 schema=ShapeClassification.model_json_schema())
         return parse_structured(resp.text, ShapeClassification)
     except (LLMError, Exception):
         # A classifier failure must not take the run down. Return

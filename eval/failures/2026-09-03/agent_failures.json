@@ -1,188 +1,104 @@
 [
   {
-    "id": "CLD-07",
+    "id": "STD-06",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "STD-21",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "unknown",
+    "error": null
+  },
+  {
+    "id": "STD-23",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "CLD-01",
     "stratum": "cold_start",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-01",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-02",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-03",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-04",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-05",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-06",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-07",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "CON-08",
-    "stratum": "constraint_conflicting",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-01",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-02",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-03",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-05",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-06",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-07",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "NEG-08",
-    "stratum": "hard_negative",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "UNK-01",
-    "stratum": "unanswerable",
-    "expected": "unknown",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "UNK-02",
-    "stratum": "unanswerable",
-    "expected": "unknown",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "UNK-03",
-    "stratum": "unanswerable",
-    "expected": "unknown",
+    "expected": "slate",
     "actual": "refuse",
     "error": null
   },
   {
-    "id": "UNK-04",
-    "stratum": "unanswerable",
-    "expected": "unknown",
+    "id": "CLD-02",
+    "stratum": "cold_start",
+    "expected": "slate",
     "actual": "refuse",
     "error": null
   },
   {
-    "id": "UNK-05",
-    "stratum": "unanswerable",
-    "expected": "unknown",
-    "actual": "slate",
+    "id": "CLD-08",
+    "stratum": "cold_start",
+    "expected": "slate",
+    "actual": "refuse",
     "error": null
   },
   {
-    "id": "UNK-06",
-    "stratum": "unanswerable",
-    "expected": "unknown",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "ADV-01",
-    "stratum": "adversarial",
+    "id": "PAR-05",
+    "stratum": "hard_negative",
     "expected": "refuse",
     "actual": "slate",
     "error": null
   },
   {
-    "id": "ADV-02",
+    "id": "PAR-08",
+    "stratum": "hard_negative",
+    "expected": "refuse",
+    "actual": "slate",
+    "error": null
+  },
+  {
+    "id": "PAR-15",
+    "stratum": "constraint_conflicting",
+    "expected": "escalate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "PAR-17",
+    "stratum": "constraint_conflicting",
+    "expected": "escalate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "PAR-18",
+    "stratum": "constraint_conflicting",
+    "expected": "escalate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "PAR-19",
+    "stratum": "constraint_conflicting",
+    "expected": "escalate",
+    "actual": "slate",
+    "error": null
+  },
+  {
+    "id": "PAR-20",
+    "stratum": "constraint_conflicting",
+    "expected": "escalate",
+    "actual": "refuse",
+    "error": null
+  },
+  {
+    "id": "PAR-22",
     "stratum": "adversarial",
     "expected": "escalate",
     "actual": "slate",
     "error": null
   },
   {
-    "id": "ADV-03",
-    "stratum": "adversarial",
-    "expected": "refuse",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "ADV-05",
-    "stratum": "adversarial",
-    "expected": "escalate",
-    "actual": "slate",
-    "error": null
-  },
-  {
-    "id": "ADV-06",
+    "id": "PAR-23",
     "stratum": "adversarial",
     "expected": "escalate",
     "actual": "slate",
