@@ -8,6 +8,7 @@ const ROUTES = [
   { href: "/", label: "Space" },
   { href: "/agent", label: "Agent" },
   { href: "/merchandise", label: "Merchandise" },
+  { href: "/segments", label: "Segments" },
   { href: "/evaluate", label: "Evaluate" },
 ];
 

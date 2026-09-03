@@ -5,12 +5,61 @@ import { useEffect, useState } from "react";
 /* Merchandise view — the policy the whole constraint layer enforces, readable
    in full. Corpus C is LOADED, not retrieved (§8.2), so there is nothing to
    search here: the entire document is the artefact. */
+const SEGMENTS = ["champions", "loyal", "at_risk", "hibernating", "big_spenders"];
+
+function Delta({ label, value, hint }: { label: string; value: number; hint?: string }) {
+  const tone = value > 0 ? "var(--signal)" : value < 0 ? "var(--reject)" : "var(--text-muted)";
+  return (
+    <div title={hint}>
+      <div className="tnum" style={{ fontSize: "var(--step-2)", color: tone, lineHeight: 1 }}>
+        {value > 0 ? "+" : ""}{value.toFixed(1)}%
+      </div>
+      <div style={{ fontSize: "var(--step--1)", color: "var(--text-muted)", marginBlockStart: 4 }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function Slate({ title, side }: { title: string; side: any }) {
+  return (
+    <div>
+      <div style={{ fontSize: "var(--step--1)", color: "var(--text-muted)", marginBlockEnd: 8 }}>
+        {title} · <span className="tnum">{(side.long_tail_share * 100).toFixed(0)}%</span> long-tail
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4 }}>
+        {side.slate.map((a: any) => (
+          <div key={a.article_id} title={`${a.prod_name ?? a.article_id} · ${a.product_type_name ?? ""}`}
+               style={{
+                 aspectRatio: "1", borderRadius: 4, fontSize: 9,
+                 display: "grid", placeItems: "center", color: "var(--text-faint)",
+                 background: "var(--surface)",
+                 border: `1px solid ${a.is_long_tail ? "var(--tail)" : "var(--hairline)"}`,
+               }} className="mono">
+            {a.position}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function MerchandisePage() {
   const [policy, setPolicy] = useState<any>(null);
+  const [sim, setSim] = useState<any>(null);
+  const [segment, setSegment] = useState("champions");
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     fetch("/api/merchandise/policy").then((r) => r.json()).then(setPolicy).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setBusy(true);
+    fetch(`/api/merchandise/simulate?k=12&segment=${segment}`)
+      .then((r) => r.json()).then(setSim).catch(() => setSim(null))
+      .finally(() => setBusy(false));
+  }, [segment]);
 
   return (
     <div style={{ padding: "var(--space-6)", maxInlineSize: 900, marginInline: "auto" }}>
@@ -22,6 +71,64 @@ export default function MerchandisePage() {
         embedded, not retrieved. A critic that reads the entire policy every time
         cannot miss a rule because a chunk failed to rank.
       </p>
+
+      <section style={{ marginBlock: "var(--space-6)" }}>
+        <h2 style={{
+          fontSize: "var(--step--1)", textTransform: "uppercase",
+          letterSpacing: "0.12em", color: "var(--text-muted)", fontWeight: 600,
+        }}>
+          Slot simulator — your model against the bestseller page
+        </h2>
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBlock: "var(--space-3)" }}>
+          {SEGMENTS.map((sg) => (
+            <button key={sg} onClick={() => setSegment(sg)} style={{
+              padding: "4px 10px", fontSize: "var(--step--1)", cursor: "pointer",
+              border: "1px solid var(--hairline)", borderRadius: 999,
+              background: segment === sg ? "var(--signal-dim)" : "transparent",
+              color: segment === sg ? "var(--signal)" : "var(--text-muted)",
+            }}>{sg.replace(/_/g, " ")}</button>
+          ))}
+        </div>
+
+        {busy || !sim?.decomposition ? (
+          <div className="skeleton" style={{ blockSize: 210, borderRadius: 8 }} />
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "var(--space-6)", flexWrap: "wrap", marginBlockEnd: "var(--space-5)" }}>
+              <Delta label="personalisation effect"
+                     value={sim.decomposition.personalisation_effect.projected_lift_pct}
+                     hint="unconstrained model vs the bestseller page — neither carrying a quota" />
+              <Delta label="cost of the long-tail quota"
+                     value={sim.decomposition.quota_cost.projected_lift_pct}
+                     hint="the same model with and without POL-LT-01" />
+              <Delta label="combined (what ships)"
+                     value={sim.decomposition.combined.projected_lift_pct} />
+              <div>
+                <div className="tnum" style={{ fontSize: "var(--step-2)", color: "var(--tail)", lineHeight: 1 }}>
+                  +{sim.decomposition.combined.coverage_cost_pp.toFixed(1)}pp
+                </div>
+                <div style={{ fontSize: "var(--step--1)", color: "var(--text-muted)", marginBlockStart: 4 }}>
+                  long-tail exposure bought
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "var(--space-5)", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+              <Slate title="Your model (with quota)" side={sim.model} />
+              <Slate title="Same model, no quota" side={sim.unconstrained} />
+              <Slate title="Bestseller baseline" side={sim.baseline} />
+            </div>
+
+            <p style={{ fontSize: "var(--step--1)", color: "var(--text-faint)", maxInlineSize: "80ch", marginBlockStart: "var(--space-4)", lineHeight: 1.65 }}>
+              {sim.the_finding}
+            </p>
+            <p style={{ fontSize: "var(--step--1)", color: "var(--text-faint)", maxInlineSize: "80ch", marginBlockStart: "var(--space-3)", lineHeight: 1.65 }}>
+              {sim.known_bias}
+            </p>
+          </>
+        )}
+      </section>
 
       {policy && (
         <>
