@@ -282,6 +282,11 @@ def health() -> dict:
             "served are the real hybrid's output."
         ),
         "llm_provider": os.environ.get("DHAWQ_LLM_PROVIDER", "auto"),
+        # Stated, not implied. An instance running the in-process fallback
+        # loses agent runs, traces and the audit log on restart, and a reader
+        # who assumes otherwise will trust a history that is not there. Set
+        # DATABASE_URL and it migrates itself on the next boot.
+        "persistence": db.durable(),
     }
 
 
