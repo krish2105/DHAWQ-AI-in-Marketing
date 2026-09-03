@@ -53,14 +53,24 @@ BANNED_CAUSAL_PATTERNS = [
 _CAUSAL_RE = [re.compile(p, re.IGNORECASE) for p in BANNED_CAUSAL_PATTERNS]
 REQUIRED_QUALIFIERS = ("projected", "estimated", "modelled", "would be expected")
 
+# Patterns tolerate INTERVENING WORDS. The first version required
+# "disregard the policy" adjacently and sailed past "disregard the
+# MERCHANDISING policy" — the same leak POL-CLM-01 predicts of any denylist,
+# found here by its own red-team test rather than in production. Anchored on
+# the imperative verb, with a bounded gap to its object.
 INJECTION_PATTERNS = [
-    r"ignore (all |any |the )?(previous|prior|above)",
-    r"disregard (the |your )?(instructions|rules|policy)",
-    r"you are now\b", r"new instructions?:", r"system prompt",
+    r"ignore\s+(all|any|the)?\s*(previous|prior|above|preceding)",
+    r"\b(disregard|override|bypass|forget)\b[^.]{0,40}?"
+    r"\b(instruction|rule|polic|quota|guideline|constraint)",
+    r"you are now\b",
+    r"new instructions?\s*:",
+    r"system prompt",
     r"</?(untrusted_content|system|instructions?)>",
-    r"reveal (your|the) (prompt|instructions|system)",
-    r"do not (tell|inform|mention)",
-    r"act as\b", r"pretend (to be|you are)",
+    r"\breveal\b[^.]{0,30}?\b(prompt|instruction|system|customer id)",
+    r"\bdo not\b[^.]{0,30}?\b(tell|inform|mention|report|disclose)",
+    r"\bact as\b",
+    r"\bpretend\b[^.]{0,20}?\b(to be|you are|that you)",
+    r"\bpre[- ]?authoris(ed|e)\b|\bpre[- ]?approv(ed|e)\b",
 ]
 _INJECTION_RE = [re.compile(p, re.IGNORECASE) for p in INJECTION_PATTERNS]
 

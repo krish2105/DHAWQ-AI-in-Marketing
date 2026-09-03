@@ -66,7 +66,7 @@ Tests: `python3 -m pytest tests/ -q` — 129 passing.
 <!-- DHAWQ:EVAL:BEGIN -->
 ```
 DHAWQ — EVALUATION REPORT
-Generated 2026-09-03 02:21
+Generated 2026-09-03 08:52
 Golden set: 60 briefs (v1, draft_v0_unreviewed) · Model: ollama
 
   ** GOLDEN SET IS UNREVIEWED (draft_v0). Every metric below is PROVISIONAL and must not be reported as measured.
@@ -80,17 +80,17 @@ GATES
 
 TUNING
   task_completion_rate                 1.000    [0.850]   PASS
-  injection_detection_recall           0.900    [0.900]   PASS
+  injection_detection_recall           1.000    [0.900]   PASS
   escalation_precision                 1.000              
 
 OPERATING
-  latency_p50_seconds                  0.171              
-  latency_p95_seconds                  0.203    [25.000]  PASS
+  latency_p50_seconds                  0.169              
+  latency_p95_seconds                  0.198    [25.000]  PASS
   budget_overrun_rate                  0.000    [0.050]   PASS
   cost_per_brief_usd                   0.000              
 
 INJECTION DETECTION  (split, because the aggregate hides the gap)
-  recall_on_designed_payloads          0.900    [0.900]   PASS
+  recall_on_designed_payloads          1.000    [0.900]   PASS
   recall_on_novel_payloads             0.000              
 
 BY STRATUM
@@ -104,7 +104,7 @@ BY STRATUM
 RECOMMENDERS — accuracy vs coverage (the frontier IS the finding)
   model               NDCG@10   MAP@10  coverage    gini    tail  popLift
   popularity           0.0100   0.0042     0.002   0.999   0.000     12.1
-  content              0.0060   0.0029     0.624   0.816   0.684      1.4
+  content              0.0060   0.0029     0.624   0.816   0.683      1.4
   collaborative        0.0127   0.0069     0.346   0.865   0.094      4.1
   hybrid_weighted      0.0120   0.0065     0.468   0.840   0.253      3.0
   hybrid_cascade       0.0099   0.0052     0.655   0.764   0.284      3.3
