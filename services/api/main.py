@@ -209,6 +209,19 @@ def latest_eval() -> dict:
     }
 
 
+@app.get("/segments/clv/holdout")
+def clv_holdout() -> dict:
+    """§11's holdout validation: fit on the first period, predict the second,
+    compare. Precomputed by pipelines/07 — a BG/NBD refit is not a per-request
+    cost, and the answer does not change between requests."""
+    import json as _json
+    from services.api.core.artifacts import PROCESSED
+    p = PROCESSED / "cohorts" / "clv_holdout.json"
+    if not p.exists():
+        raise HTTPException(404, "run pipelines/07_validate_clv.py")
+    return _json.loads(p.read_text())
+
+
 @app.get("/segments/rfm")
 def segments() -> dict:
     from services.api.core.artifacts import cohort_segments

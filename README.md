@@ -92,7 +92,7 @@ Tests: `python3 -m pytest tests/ -q` — 129 passing.
 <!-- DHAWQ:EVAL:BEGIN -->
 ```
 DHAWQ — EVALUATION REPORT
-Generated 2026-09-03 10:18
+Generated 2026-09-03 10:50
 Golden set: 83 briefs (v1, assistant_reviewed) · Model: ollama
 
   ** GOLDEN SET IS NOT INDEPENDENTLY REVIEWED (status: assistant_reviewed). The briefs, the labels and the code that scores them share one author, so these metrics are PROVISIONAL. A paraphrase review was run and its findings are in the file; it improved the labels but cannot supply the independence §10.2 asks for. A second reader is what would.
@@ -112,14 +112,22 @@ TUNING
   escalation_precision                 1.000              
 
 OPERATING
-  latency_p50_seconds                  0.557              
-  latency_p95_seconds                  0.756    [25.000]  PASS
+  latency_p50_seconds                  0.759              
+  latency_p95_seconds                  1.013    [25.000]  PASS
   budget_overrun_rate                  0.000    [0.050]   PASS
   cost_per_brief_usd                   0.000              
 
 INJECTION DETECTION  (split, because the aggregate hides the gap)
   recall_on_designed_payloads          1.000    [0.900]   PASS
   recall_on_novel_payloads             0.000              
+
+CALIBRATION  (§10.3 — does the stated confidence mean anything?)
+  brier_score                          0.130    [0.250]   PASS
+  expected_calibration_error           0.022              
+  overconfidence                       0.004              
+  bin             n    stated  observed     gap
+  0.6-0.8        55     0.747     0.727  +0.020
+  0.8-1.0        28     0.974     1.000  -0.026
 
 BY STRATUM
   standard                    21/24   87.5%
@@ -152,7 +160,7 @@ RECOMMENDERS — accuracy vs coverage (the frontier IS the finding)
   content              0.0060   0.0029     0.624   0.816   0.683      1.4
   collaborative        0.0127   0.0069     0.346   0.865   0.094      4.1
   hybrid_weighted      0.0120   0.0065     0.468   0.840   0.253      3.0
-  hybrid_cascade       0.0099   0.0052     0.655   0.764   0.284      3.3
+  hybrid_cascade       0.0099   0.0052     0.655   0.764   0.283      3.3
 
   Cold-start NDCG@10 by training history depth
   model                     0      1-2      3-9      10+

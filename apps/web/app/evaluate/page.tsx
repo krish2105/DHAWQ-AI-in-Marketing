@@ -5,6 +5,7 @@ import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
 import { Frontier } from "@/components/evaluate/Frontier";
 import { ColdStart } from "@/components/evaluate/ColdStart";
+import { Reliability } from "@/components/evaluate/Reliability";
 
 /*
  * The evaluation view (§12.6).
@@ -135,7 +136,39 @@ export default function EvaluatePage() {
             ))}
           </div>
 
-          <h2 style={{ ...SECTION, marginBlockStart: "var(--space-6)" }}>
+          {agent.calibration && (
+            <>
+              <h2 style={{ ...SECTION, marginBlockStart: "var(--space-7)" }}>
+                Calibration — does the stated confidence mean anything?
+              </h2>
+              <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                          maxInlineSize: "72ch", marginBlockEnd: "var(--space-4)", lineHeight: 1.6 }}>
+                A system that is 70% accurate and knows it is more useful than
+                one that is 85% accurate and always says 99%. The confidence is
+                computed in <strong>code</strong> from observable run properties
+                — evidence coverage, whether a rule or a model decided, binding
+                constraints, retries. No model emits it: the model&rsquo;s own
+                self-reported confidence was measured and found to be noise.
+              </p>
+              <Reliability
+                bins={agent.calibration.reliability_curve}
+                brier={agent.calibration.brier_score}
+                ece={agent.calibration.expected_calibration_error}
+              />
+              {agent.calibration.reliability_curve.length < 3 && (
+                <p style={{ fontSize: "var(--step--1)", color: "var(--reject)",
+                            maxInlineSize: "72ch", marginBlockStart: "var(--space-3)", lineHeight: 1.6 }}>
+                  Only {agent.calibration.reliability_curve.length} bins are
+                  populated — confidence clusters rather than spreading, so this
+                  is a thin curve. It shows the system is not badly
+                  miscalibrated; it is not enough points to claim it is well
+                  calibrated across the range.
+                </p>
+              )}
+            </>
+          )}
+
+          <h2 style={{ ...SECTION, marginBlockStart: "var(--space-7)" }}>
             Injection detection — split, because the aggregate hides the gap
           </h2>
           <div style={{ display: "flex", gap: "var(--space-6)", flexWrap: "wrap" }}>

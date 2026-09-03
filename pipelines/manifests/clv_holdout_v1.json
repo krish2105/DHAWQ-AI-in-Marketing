@@ -1,0 +1,30 @@
+{
+  "pipeline": "clv_holdout_v1",
+  "generated_at": "2026-09-03T10:42:59+05:30",
+  "git_rev": "8c45529",
+  "python": "3.13.5",
+  "calibration": {
+    "from": "2020-07-01",
+    "to": "2020-08-26",
+    "weeks": 8
+  },
+  "holdout": {
+    "from": "2020-08-26",
+    "to": "2020-09-08",
+    "days": 13
+  },
+  "n_customers": 115861,
+  "why_inside_train": "The test split is reserved for ranking evaluation. Borrowing it here would spend held-out data twice and let a CLV tuned against it leak into the \u00a79 numbers.",
+  "accuracy": {
+    "mae_purchases": 0.7035,
+    "bias_purchases": -0.1613,
+    "correlation": 0.2028,
+    "naive_baseline_mae": 0.7751,
+    "beats_naive": true
+  },
+  "outputs": {
+    "clv_holdout.json": {
+      "sha256": "c774f8413d6d2e11ba20f019c2b40dec381ec5fc5d6b154dc97c1d65f6f6a49c"
+    }
+  }
+}

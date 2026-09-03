@@ -251,6 +251,49 @@ def merchandiser(run: MerchandisingRun, k: int = 12) -> MerchandisingRun:
     return run
 
 
+def run_confidence(run: MerchandisingRun) -> float:
+    """How much the RUN should be believed, computed in code.
+
+    §0.1: no model emits a number that reaches a user, and this is one. The
+    model's own self-reported confidence was measured and found to be noise —
+    it returned 0.0 on answers it got right — so it is recorded for the
+    calibration curve and never used as an input here.
+
+    The inputs are all observable properties of the run:
+      evidence coverage      claims that actually resolve
+      decision provenance    a deterministic rule is more trustworthy than a
+                             3B model's judgement, and we know which fired
+      binding constraints    a slate the optimiser could not satisfy cleanly
+                             is a weaker answer than one it could
+      retries                a run that needed a second critic round converged
+                             less cleanly than one that passed first time
+
+    Whether this function is WELL CALIBRATED is a separate question, and one
+    §10.3 insists on answering rather than assuming. See eval/run.py.
+    """
+    c = 0.55                                  # base: an ordinary completed run
+
+    c += 0.25 * run.evidence_coverage()       # grounded claims earn belief
+
+    if run.triage_verdict and run.triage_verdict != "proceed":
+        # A refusal reached by RULE is near-certain; one reached by a model is
+        # a judgement, and the paraphrase review showed those are fallible.
+        c += 0.18 if run.triage_rule_ids else -0.05
+
+    blocking = [r for r in run.rejections if r.stage == "critic"]
+    c -= 0.06 * len(blocking)
+    c -= 0.08 * max(0, run.critic_rounds - 1)
+
+    if run.candidate_slates:
+        binding = run.candidate_slates[-1].optimiser_report.get("binding_constraints") or []
+        c -= 0.05 * len(binding)
+
+    if run.errors:
+        c -= 0.04 * len(run.errors)
+
+    return max(0.05, min(0.99, c))
+
+
 def critic_node(run: MerchandisingRun) -> MerchandisingRun:
     """Capped at MAX_ROUNDS. On final rejection the slate is DROPPED, never
     silently downgraded into the output (§7.6)."""
@@ -264,7 +307,10 @@ def critic_node(run: MerchandisingRun) -> MerchandisingRun:
         policy_document=policy.document if policy else "",
         policy_rule_ids=frozenset(policy.rule_ids) if policy else frozenset(),
     )
-    result = critique(view, stated_confidence=0.8, round_=run.critic_rounds)
+    # Was hardcoded 0.8, which made the §10.3 calibration curve degenerate:
+    # a constant confidence has nothing to be calibrated against.
+    result = critique(view, stated_confidence=run_confidence(run),
+                      round_=run.critic_rounds)
     run.rejections.extend(result.rejections)
     run.confidence = result.confidence
 

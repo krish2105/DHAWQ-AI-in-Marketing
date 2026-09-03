@@ -71,6 +71,10 @@ class BriefResult:
     schema_valid: bool = True
     budget_overrun: bool = False
     triage_refusals: int = 0
+    #: What the RUN claimed about itself, and what the model claimed. Recorded
+    #: separately because they are different claims and §10.3 calibrates both.
+    stated_confidence: float = 0.0
+    model_confidence: float | None = None
     error: str | None = None
 
 
@@ -103,7 +107,7 @@ def classify_outcome(run) -> str:
 
 
 def evaluate_brief(entry: dict) -> BriefResult:
-    from services.api.agent.graph import new_run, run_to_gate
+    from services.api.agent.graph import new_run, run_confidence, run_to_gate
     from services.api.core.rbac import Role
 
     t0 = time.perf_counter()
@@ -134,6 +138,8 @@ def evaluate_brief(entry: dict) -> BriefResult:
                 for s2 in run.candidate_slates for s in s2.slots
             ),
             budget_overrun=run.budget.steps_used > run.budget.max_steps,
+            stated_confidence=run_confidence(run),
+            model_confidence=(run.confidence.stated if run.confidence else None),
         )
     except Exception as exc:
         return BriefResult(entry["id"], entry["stratum"],
@@ -209,6 +215,39 @@ def run_suite(limit: int | None = None) -> dict:
         s["n"] += 1
         s["passed"] += int(r.passed)
 
+    # ── §10.3 · calibration. "Accuracy tells you how often the system is
+    # right. Calibration tells you whether its confidence means anything."
+    from services.api.evaluate.calibration import (
+        brier_score, expected_calibration_error, overconfidence, reliability_curve,
+    )
+    confs = [r.stated_confidence for r in results]
+    outs = [r.passed for r in results]
+    bins = reliability_curve(confs, outs, n_bins=5)
+    calibration = {
+        "brier_score": round(brier_score(confs, outs), 4),
+        "expected_calibration_error": round(expected_calibration_error(bins), 4),
+        "overconfidence": round(overconfidence(bins), 4),
+        "reliability_curve": [
+            {"bin": f"{b.lo:.1f}-{b.hi:.1f}", "n": b.n,
+             "mean_confidence": round(b.mean_confidence, 3),
+             "observed_accuracy": round(b.observed_accuracy, 3),
+             "gap": round(b.gap, 3)}
+            for b in bins
+        ],
+        "confidence_source": (
+            "Computed in CODE from observable run properties — evidence "
+            "coverage, whether a rule or a model decided, binding constraints, "
+            "retries. §0.1 forbids a model emitting a number that reaches a "
+            "user, and the model's own self-reported confidence was measured "
+            "and found to be noise (it returned 0.0 on answers it got right)."
+        ),
+        "reading": (
+            "Positive overconfidence means the system overstates itself. §10.3: "
+            "suppress confidence rather than inflating the accuracy claim — "
+            "which is what critic criterion 8 already does on thin evidence."
+        ),
+    }
+
     inj = measure_injection_recall()
     # BLOCK RECALL vs EXACT MATCH. On a safety property these are different
     # questions and reporting only the first hides the second: a brief that
@@ -259,6 +298,7 @@ def run_suite(limit: int | None = None) -> dict:
         "tuning": tuning,
         "operating": operating,
         "injection": inj,
+        "calibration": calibration,
         "by_stratum": by_stratum,
         "refusal_behaviour_detail": {
             "must_block": len(must_block), "blocked": len(blocked),

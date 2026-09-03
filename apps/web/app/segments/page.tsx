@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
 import Link from "next/link";
+import { ClvHoldout } from "@/components/evaluate/ClvHoldout";
 
 /* Segments (§12.6) — RFM cohorts and the projected CLV distribution.
    AGGREGATES ONLY. There is no endpoint that returns an individual customer,
@@ -17,6 +18,7 @@ const SECTION: React.CSSProperties = {
 export default function SegmentsPage() {
   const [rfm, setRfm] = useState<any>(null);
   const [clv, setClv] = useState<any>(null);
+  const [holdout, setHoldout] = useState<any>(null);
   const [err, setErr] = useState<ApiError | null>(null);
 
   const load = useCallback(() => {
@@ -25,6 +27,8 @@ export default function SegmentsPage() {
       r.ok ? setRfm(r.data) : setErr(r.error));
     apiGet<any>("/api/segments/clv").then((r) =>
       r.ok ? setClv(r.data) : setErr(r.error));
+    apiGet<any>("/api/segments/clv/holdout").then((r) =>
+      r.ok ? setHoldout(r.data) : null);   // optional: absent until pipeline 07 runs
   }, []);
 
   useEffect(load, [load]);
@@ -110,6 +114,27 @@ export default function SegmentsPage() {
             <div style={{ fontSize: "var(--step--1)", color: "var(--text-faint)", marginBlockStart: 6 }}>
               projected CLV, clipped at the 99th percentile so the tail does not flatten the chart
             </div>
+
+            {holdout && (
+              <div style={{ marginBlockStart: "var(--space-6)" }}>
+                <h2 style={SECTION}>
+                  Holdout validation — fit on the first period, predict the second
+                </h2>
+                <p style={{ fontSize: "var(--step--1)", color: "var(--text-muted)",
+                            maxInlineSize: "74ch", marginBlockEnd: "var(--space-4)", lineHeight: 1.6 }}>
+                  Until this existed the CLV figures were <strong>unvalidated</strong> —
+                  the model fitted, produced plausible numbers, and nothing had
+                  checked whether they corresponded to anything. Calibrated on{" "}
+                  {holdout.protocol.calibration.weeks} weeks, tested against the{" "}
+                  {holdout.protocol.holdout.days} days that followed.
+                </p>
+                <ClvHoldout buckets={holdout.buckets} accuracy={holdout.accuracy} />
+                <p style={{ fontSize: "var(--step--1)", color: "var(--text-faint)",
+                            maxInlineSize: "74ch", marginBlockStart: "var(--space-3)", lineHeight: 1.6 }}>
+                  {holdout.limitation}
+                </p>
+              </div>
+            )}
 
             <div style={{
               marginBlockStart: "var(--space-5)", padding: "var(--space-4)",
