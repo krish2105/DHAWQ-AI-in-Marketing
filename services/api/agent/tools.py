@@ -282,12 +282,16 @@ def _hybrid_search(args: HybridSearchIn) -> HybridSearchOut:
     most likely to forget.
     """
     from services.api.rag.hybrid import hybrid_search
-    from services.api.rag.untrusted import wrap
+    from services.api.rag.untrusted import policy_assertions, wrap
 
     hits, suspected = [], 0
     for h in hybrid_search(args.query, k=args.k):
         w = wrap(h.doc.text, source=h.doc.source, url=h.doc.url)
-        suspected += w.neutralised_tags
+        # Counted at the boundary as well as judged by the critic, because
+        # §8.5 asks for detections to be MEASURED, not only defended against —
+        # and a document the critic never sees (because the run ended early)
+        # still needs to appear in the count.
+        suspected += w.neutralised_tags + len(policy_assertions(h.doc.text))
         hits.append({
             "doc_id": h.doc.doc_id, "title": h.doc.title, "url": h.doc.url,
             "score": round(h.score, 5), "content": w.text,

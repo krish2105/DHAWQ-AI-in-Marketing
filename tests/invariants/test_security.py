@@ -12,6 +12,10 @@ an acknowledged gap.
 
 from __future__ import annotations
 
+from pathlib import Path as _Path
+
+REPO = _Path(__file__).resolve().parents[2]
+
 import json
 
 import pytest
@@ -272,3 +276,58 @@ def test_gap_rate_limiting_is_not_yet_wired():
     assert not hasattr(main, "limiter"), (
         "rate limiting is now wired — replace this gap test with a real one"
     )
+
+
+def test_LLM01_policy_assertion_detector_does_not_fire_on_benign_corpus_d():
+    """The number that decides whether the assertion detector is real.
+
+    Detecting 15/15 attacks is worthless if it also flags the 96 ordinary
+    documents in the same snapshot — a retriever whose every result is a
+    finding has stopped retrieving. Measured on the shipped snapshot, not on
+    a hand-picked sample.
+    """
+    import json
+    from services.api.rag.untrusted import policy_assertions
+
+    snap = json.loads(
+        (REPO / "services/api/rag/corpora/external/snapshot_2026-09-03.json")
+        .read_text())
+    benign = [d for d in snap["documents"] if not d["planted_injection"]]
+    flagged = [d["doc_id"] for d in benign if policy_assertions(d["text"])]
+    assert flagged == [], f"false positives on benign corpus D: {flagged}"
+
+
+def test_LLM01_every_planted_injection_in_the_snapshot_is_caught():
+    import json
+
+    from services.api.agent.critic import CriticView, criterion_7_injection
+    from services.api.agent.state import Evidence
+
+    snap = json.loads(
+        (REPO / "services/api/rag/corpora/external/snapshot_2026-09-03.json")
+        .read_text())
+    for d in snap["documents"]:
+        if not d["planted_injection"]:
+            continue
+        ev = Evidence.create("D", d["url"], d["text"], trust="untrusted")
+        view = CriticView(None, (), {ev.evidence_id: ev}, "", frozenset(),
+                          frozenset(), (), {})
+        assert criterion_7_injection(view), f"{d['doc_id']} not detected"
+
+
+def test_LLM01_the_corpus_c_exemption_survives_the_new_detectors():
+    """Corpus C legitimately says "override requires policy:override" and
+    "the quota does not apply below k=5". Both would trip the act layer and
+    the assertion detector — and must not, because criterion 7 is scoped to
+    UNTRUSTED evidence and corpus C is not untrusted. This asserts the scoping
+    rather than trusting it."""
+    from services.api.agent.critic import CriticView, criterion_7_injection
+    from services.api.agent.state import Evidence
+
+    for text in ("Override requires policy:override, which the agent never holds.",
+                 "The long-tail quota does not apply to slates below five slots.",
+                 "Publishing a slate requires slate:approve."):
+        ev = Evidence.create("C", "POL-ESC-06", text)          # trusted
+        view = CriticView(None, (), {ev.evidence_id: ev}, "", frozenset(),
+                          frozenset(), (), {})
+        assert criterion_7_injection(view) == [], text
