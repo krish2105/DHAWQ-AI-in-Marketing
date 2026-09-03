@@ -20,6 +20,7 @@ data/
 !data/processed/cohorts/segments.json
 !data/processed/cohorts/simulations.json
 !data/processed/cohorts/catalogue.json
+!data/processed/cohorts/clv_holdout.json
 *.zip
 *.npy
 *.parquet

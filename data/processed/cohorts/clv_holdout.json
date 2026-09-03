@@ -1,0 +1,79 @@
+{
+  "protocol": {
+    "calibration": {
+      "from": "2020-07-01",
+      "to": "2020-08-26",
+      "weeks": 8
+    },
+    "holdout": {
+      "from": "2020-08-26",
+      "to": "2020-09-08",
+      "days": 13
+    },
+    "n_customers": 115861,
+    "why_inside_train": "The test split is reserved for ranking evaluation. Borrowing it here would spend held-out data twice and let a CLV tuned against it leak into the \u00a79 numbers."
+  },
+  "params": {
+    "bgnbd": {
+      "r": 5.710667582963712,
+      "alpha": 88.99707542645316,
+      "a": 1.7896361203478268,
+      "b": 11.818032489454067,
+      "converged": true,
+      "n_customers": 115861
+    },
+    "gamma_gamma": {
+      "p": 4.835717221584187,
+      "q": 3.669223859650383,
+      "v": 0.043183399670244316,
+      "converged": true,
+      "population_mean": 0.07823349424851354
+    }
+  },
+  "accuracy": {
+    "mae_purchases": 0.7035,
+    "bias_purchases": -0.1613,
+    "correlation": 0.2028,
+    "naive_baseline_mae": 0.7751,
+    "beats_naive": true
+  },
+  "buckets": [
+    {
+      "calibration_frequency": "0",
+      "n": 14086,
+      "mean_predicted": 0.6132,
+      "mean_actual": 1.2405
+    },
+    {
+      "calibration_frequency": "1",
+      "n": 31974,
+      "mean_predicted": 0.4381,
+      "mean_actual": 0.7853
+    },
+    {
+      "calibration_frequency": "2",
+      "n": 36418,
+      "mean_predicted": 0.515,
+      "mean_actual": 0.4101
+    },
+    {
+      "calibration_frequency": "3-4",
+      "n": 23644,
+      "mean_predicted": 0.621,
+      "mean_actual": 0.6028
+    },
+    {
+      "calibration_frequency": "5-7",
+      "n": 7297,
+      "mean_predicted": 0.8066,
+      "mean_actual": 0.9904
+    },
+    {
+      "calibration_frequency": "8+",
+      "n": 2442,
+      "mean_predicted": 1.217,
+      "mean_actual": 1.8989
+    }
+  ],
+  "limitation": "A 13-day holdout on a 12-week window is short for a model whose premise is long-horizon behaviour. It can catch a model that is badly wrong; it cannot confirm one that is subtly wrong. Read the bucket table as a sanity check, not a validation of long-run CLV."
+}
