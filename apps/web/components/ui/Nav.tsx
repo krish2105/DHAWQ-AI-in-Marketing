@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "@/lib/auth";
 
 const ROUTES = [
   { href: "/", label: "Space" },
@@ -14,6 +15,7 @@ const ROUTES = [
 
 export function Nav() {
   const path = usePathname();
+  const { me, logout } = useAuth();
   return (
     <header
       style={{
@@ -71,7 +73,24 @@ export function Nav() {
         })}
       </nav>
 
-      <div style={{ flex: "0 0 auto" }}>
+      <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center",
+                    gap: "var(--space-3)" }}>
+        {me && (
+          <button
+            onClick={logout}
+            title={`Signed in as ${me.role} · ${me.scopes.length} scopes · click to sign out`}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+              padding: "4px 10px", borderRadius: 999, fontSize: "var(--step--1)",
+              border: "1px solid var(--hairline)", background: "var(--surface)",
+              color: "var(--text-muted)", whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ inlineSize: 6, blockSize: 6, borderRadius: 999,
+                           background: "var(--signal)" }} />
+            {me.role}
+          </button>
+        )}
         <ThemeToggle />
       </div>
     </header>

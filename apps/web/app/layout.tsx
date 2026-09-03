@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/ui/Nav";
+import { AuthProvider } from "@/lib/auth";
 
 const ui = Inter({ subsets: ["latin"], variable: "--font-ui", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
@@ -42,8 +43,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className={`${ui.variable} ${mono.variable}`}>
-        <Nav />
-        <main id="main">{children}</main>
+        <AuthProvider>
+          <Nav />
+          <main id="main">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

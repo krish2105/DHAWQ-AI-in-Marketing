@@ -8,6 +8,10 @@ const API =
 
 const config: NextConfig = {
   reactStrictMode: false,
+  // The browser only ever talks to the Vercel origin; Next forwards to Render
+  // server-side. Set-Cookie comes back through the proxy without a Domain
+  // attribute, so it scopes to the host the browser saw — which is what makes
+  // an httpOnly cookie work across two hosts without ever being cross-site.
   async rewrites() {
     // Static artefacts and API share an origin in dev so the browser never
     // deals with CORS for the atlas or positions.bin.

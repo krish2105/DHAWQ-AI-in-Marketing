@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import { RequireScope } from "@/components/ui/SignIn";
 import { useSearchParams } from "next/navigation";
 
 /* Merchandise view — the policy the whole constraint layer enforces, readable
@@ -55,9 +56,11 @@ function Slate({ title, side }: { title: string; side: any }) {
    part on the client. Without it the whole page fails to prerender. */
 export default function MerchandisePage() {
   return (
-    <Suspense fallback={<div className="skeleton" style={{ blockSize: 320, margin: "var(--space-6)", borderRadius: 8 }} />}>
-      <MerchandiseView />
-    </Suspense>
+    <RequireScope scope="merch:simulate" reason="The slot simulator is scope-protected.">
+      <Suspense fallback={<div className="skeleton" style={{ blockSize: 320, margin: "var(--space-6)", borderRadius: 8 }} />}>
+        <MerchandiseView />
+      </Suspense>
+    </RequireScope>
   );
 }
 

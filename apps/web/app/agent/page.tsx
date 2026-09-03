@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { apiPost, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import { RequireScope } from "@/components/ui/SignIn";
 
 /*
  * The agent console (§12.6).
@@ -36,6 +37,15 @@ const SECTION: React.CSSProperties = {
 };
 
 export default function AgentPage() {
+  return (
+    <RequireScope scope="recs:read"
+                  reason="Submitting a brief is scope-protected — the run is down-scoped from your role.">
+      <AgentView />
+    </RequireScope>
+  );
+}
+
+function AgentView() {
   const [brief, setBrief] = useState(EXAMPLES[0].brief);
   const [events, setEvents] = useState<Ev[]>([]);
   const [running, setRunning] = useState(false);

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, type ApiError } from "@/lib/api";
 import { ApiNotice } from "@/components/ui/ApiNotice";
+import { RequireScope } from "@/components/ui/SignIn";
 import Link from "next/link";
 import { ClvHoldout } from "@/components/evaluate/ClvHoldout";
 
@@ -16,6 +17,14 @@ const SECTION: React.CSSProperties = {
 };
 
 export default function SegmentsPage() {
+  return (
+    <RequireScope scope="segments:read:agg" reason="Segment aggregates and projected CLV are scope-protected.">
+      <SegmentsView />
+    </RequireScope>
+  );
+}
+
+function SegmentsView() {
   const [rfm, setRfm] = useState<any>(null);
   const [clv, setClv] = useState<any>(null);
   const [holdout, setHoldout] = useState<any>(null);
