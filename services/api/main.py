@@ -15,6 +15,7 @@ import asyncio
 import json
 import os
 from collections import OrderedDict
+from contextlib import asynccontextmanager
 import sys
 import uuid
 from datetime import datetime
@@ -29,12 +30,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from fastapi import Depends, Response, Cookie
 from services.api.agent.graph import explainer, human_gate, new_run, run_to_gate
+from services.api.core import security as sec
+from services.api.core.rbac import Scope, ScopeViolation
 from services.api.agent.state import GateResolution, MerchandisingRun
 from services.api.core.rbac import Role
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # on_event is deprecated; lifespan is the supported hook.
+    sec.seed_demo_users()
+    yield
+
+
 app = FastAPI(title="DHAWQ", version="1.0.0",
-              description="Visual recommendation intelligence")
+              description="Visual recommendation intelligence",
+              lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,6 +63,81 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Auth (§13.1) and per-route scope enforcement (§13.2)
+#
+# AUTH IS PART OF THE DEMO, NOT A BARRIER IN FRONT OF IT. One account per role,
+# one click each, so a visitor can watch the permission matrix behave: a viewer
+# cannot run a simulation, a merchandiser can, and neither can manage users.
+# An open API would have made §13.2 a table in a document rather than something
+# you can see refuse you.
+# ─────────────────────────────────────────────────────────────────────────────
+
+AUDIT: "OrderedDict[str, dict]" = OrderedDict()
+MAX_AUDIT = 500
+
+
+def _audit(actor: str, action: str, detail: dict) -> None:
+    """§13.1: segment exports, simulation runs and every agent run logged and
+    replayable."""
+    key = f"{datetime.now().astimezone().isoformat()}|{uuid.uuid4().hex[:6]}"
+    AUDIT[key] = {"at": key.split("|")[0], "actor": actor,
+                  "action": action, **detail}
+    while len(AUDIT) > MAX_AUDIT:
+        AUDIT.popitem(last=False)
+
+
+def current_user(dhawq_at: str | None = Cookie(default=None)) -> sec.User:
+    if not dhawq_at:
+        raise HTTPException(401, "not authenticated")
+    try:
+        claims = sec.decode(dhawq_at, "access")
+    except sec.AuthError as exc:
+        raise HTTPException(401, str(exc)) from exc
+    user = next((u for u in sec.STORE.users.values()
+                 if u.user_id == claims["sub"]), None)
+    if user is None:
+        raise HTTPException(401, "unknown subject")
+    return user
+
+
+def requires(scope: Scope):
+    """Route-level scope check.
+
+    Enforced HERE and again at the agent's tool boundary. The two are not
+    redundant: this stops a caller reaching an endpoint, the tool boundary
+    stops the AGENT reaching a capability even when the caller has it. §13.3's
+    intersection only means something if both exist.
+    """
+    def dep(user: sec.User = Depends(current_user)) -> sec.User:
+        if scope not in user.scopes:
+            raise HTTPException(
+                403, f"role {user.role.value!r} lacks {scope.value!r}")
+        return user
+    return dep
+
+
+class Credentials(BaseModel):
+    email: str
+    password: str
+
+
+#: Secure cookies are HTTPS-only by definition, so over plain http they are set
+#: and never sent back — every authenticated request then looks unauthenticated.
+#: Production must keep them secure; local dev and the test client cannot. The
+#: default is SECURE, so forgetting to set this weakens nothing.
+INSECURE_COOKIES = os.environ.get("DHAWQ_INSECURE_COOKIES", "").lower() in ("1", "true", "yes")
+
+
+def _set_cookies(resp: Response, access: str, refresh: str) -> None:
+    common = dict(httponly=True, samesite="lax",
+                  secure=not INSECURE_COOKIES, path="/")
+    resp.set_cookie(sec.ACCESS_COOKIE, access,
+                    max_age=int(sec.ACCESS_TTL.total_seconds()), **common)
+    resp.set_cookie(sec.REFRESH_COOKIE, refresh,
+                    max_age=int(sec.REFRESH_TTL.total_seconds()), **common)
 
 
 class ErrorBody(BaseModel):
@@ -95,6 +182,78 @@ def _emit(run_id: str, type_: str, payload: dict) -> None:
 
 
 # ── catalogue and scene ──────────────────────────────────────────────────────
+
+@app.post("/auth/login")
+def login(body: Credentials, response: Response) -> dict:
+    try:
+        user = sec.authenticate(body.email, body.password)
+    except sec.AuthError:
+        # One message for every failure. Distinguishing "no such user" from
+        # "wrong password" turns credential stuffing into account enumeration.
+        _audit(body.email, "login.failed", {})
+        raise HTTPException(401, "invalid credentials")
+    access = sec.create_access_token(user)
+    refresh, _ = sec.create_refresh_token(user)
+    sec.register_refresh(refresh)
+    _set_cookies(response, access, refresh)
+    _audit(user.user_id, "login.ok", {"role": user.role.value})
+    return {"user_id": user.user_id, "email": user.email,
+            "role": user.role.value,
+            "scopes": sorted(s.value for s in user.scopes)}
+
+
+@app.post("/auth/refresh")
+def refresh_token(response: Response,
+                  dhawq_rt: str | None = Cookie(default=None)) -> dict:
+    if not dhawq_rt:
+        raise HTTPException(401, "no refresh token")
+    try:
+        user, access, new_refresh = sec.rotate_refresh(dhawq_rt)
+    except sec.AuthError as exc:
+        _audit("unknown", "refresh.rejected", {"reason": str(exc)})
+        raise HTTPException(401, str(exc)) from exc
+    sec.register_refresh(new_refresh)
+    _set_cookies(response, access, new_refresh)
+    return {"role": user.role.value}
+
+
+@app.post("/auth/logout")
+def logout(response: Response, dhawq_rt: str | None = Cookie(default=None)) -> dict:
+    if dhawq_rt:
+        sec.revoke_family(dhawq_rt)
+    for c in (sec.ACCESS_COOKIE, sec.REFRESH_COOKIE):
+        response.delete_cookie(c, path="/")
+    return {"ok": True}
+
+
+@app.get("/auth/me")
+def me(user: sec.User = Depends(current_user)) -> dict:
+    return {"user_id": user.user_id, "email": user.email, "role": user.role.value,
+            "scopes": sorted(s.value for s in user.scopes)}
+
+
+@app.get("/auth/demo-accounts")
+def demo_accounts() -> dict:
+    """The §13.2 matrix, walkable. No demo account exceeds merchandiser, so a
+    shared password cannot become an admin session."""
+    sec.seed_demo_users()
+    return {
+        "password": sec.DEMO_PASSWORD,
+        "accounts": [
+            {"email": u.email, "role": u.role.value,
+             "scopes": sorted(s.value for s in u.scopes)}
+            for u in sorted(sec.STORE.users.values(), key=lambda x: x.email)
+        ],
+        "note": ("Demo accounts stop at merchandiser. None can manage users or "
+                 "read the audit log, so the shared password cannot become an "
+                 "admin session."),
+    }
+
+
+@app.get("/audit")
+def audit_log(user: sec.User = Depends(requires(Scope.AUDIT_READ))) -> dict:
+    return {"entries": list(AUDIT.values())[-100:]}
+
 
 @app.get("/health")
 def health() -> dict:
@@ -210,7 +369,7 @@ def latest_eval() -> dict:
 
 
 @app.get("/segments/clv/holdout")
-def clv_holdout() -> dict:
+def clv_holdout(user: sec.User = Depends(requires(Scope.SEGMENTS_READ_AGG))) -> dict:
     """§11's holdout validation: fit on the first period, predict the second,
     compare. Precomputed by pipelines/07 — a BG/NBD refit is not a per-request
     cost, and the answer does not change between requests."""
@@ -223,13 +382,13 @@ def clv_holdout() -> dict:
 
 
 @app.get("/segments/rfm")
-def segments() -> dict:
+def segments(user: sec.User = Depends(requires(Scope.SEGMENTS_READ_AGG))) -> dict:
     from services.api.core.artifacts import cohort_segments
     return cohort_segments()["rfm"]
 
 
 @app.get("/segments/clv")
-def clv_summary() -> dict:
+def clv_summary(user: sec.User = Depends(requires(Scope.SEGMENTS_READ_AGG))) -> dict:
     """PROJECTED CLV aggregates. Never individual rows — POL-SEG-02 and the
     §13.2 row denying access to individual customer records.
 
@@ -278,7 +437,8 @@ def _histogram(v, bins: int) -> list[dict]:
 
 @app.get("/merchandise/simulate")
 def simulate(k: int = Query(12, ge=4, le=24), model: str = "hybrid_weighted",
-             segment: str = "champions") -> dict:
+             segment: str = "champions",
+             user: sec.User = Depends(requires(Scope.MERCH_SIMULATE))) -> dict:
     """Side-by-side: the model's slate against the bestseller baseline, with the
     personalisation effect and the quota cost decomposed.
 
@@ -303,8 +463,13 @@ class BriefIn(BaseModel):
 
 
 @app.post("/agent/runs", status_code=202)
-def submit_brief(body: BriefIn) -> dict:
-    run = new_run(body.brief, "web-user", Role(body.caller_role))
+def submit_brief(body: BriefIn,
+                 user: sec.User = Depends(requires(Scope.RECS_READ))) -> dict:
+    # The caller's OWN role drives the down-scoping, never a role they claim in
+    # the body. §13.3 is meaningless if the request can name its own authority.
+    run = new_run(body.brief, user.user_id, user.role)
+    _audit(user.user_id, "agent.run.submitted",
+           {"run_id": run.run_id, "role": user.role.value})
     _remember(run)
     _emit(run.run_id, "run.started", {"goal": run.goal,
                                       "scopes": sorted(s.value for s in run.granted_scopes)})
@@ -372,7 +537,8 @@ class ResumeIn(BaseModel):
 
 
 @app.post("/agent/runs/{run_id}/resume", status_code=202)
-def resume(run_id: str, body: ResumeIn) -> dict:
+def resume(run_id: str, body: ResumeIn,
+           user: sec.User = Depends(requires(Scope.SLATE_APPROVE))) -> dict:
     """The interrupt contract. A resolution for a stale gate_id is refused, not
     applied — otherwise a replayed approval could authorise a slate it was
     never shown."""
@@ -380,7 +546,9 @@ def resume(run_id: str, body: ResumeIn) -> dict:
         raise HTTPException(404, "no such run")
     run = _RUNS[run_id]
     run = human_gate(run, GateResolution(gate_id=body.gate_id, decision=body.decision,
-                                         actor_id="web-user", note=body.note))
+                                         actor_id=user.user_id, note=body.note))
+    _audit(user.user_id, "gate.resolved",
+           {"run_id": run_id, "decision": body.decision, "gate_id": body.gate_id})
     if run.phase.value == "explaining":
         run = explainer(run)
     _remember(run)

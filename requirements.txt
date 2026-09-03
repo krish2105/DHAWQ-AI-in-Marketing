@@ -14,3 +14,5 @@ pillow>=10.4
 pyyaml>=6.0
 langgraph>=0.2.50
 psycopg[binary]>=3.2
+pyjwt>=2.9
+pwdlib[argon2]>=0.2
