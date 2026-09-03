@@ -43,7 +43,10 @@ async def lifespan(_: FastAPI):
     # on_event is deprecated; lifespan is the supported hook.
     sec.seed_demo_users()
     db.init()          # migrates on connect; a dead DB degrades, never fails
-    yield
+    try:
+        yield
+    finally:
+        db.close()     # otherwise each restart waits 5s per pool worker
 
 
 app = FastAPI(title="DHAWQ", version="1.0.0",
@@ -168,6 +171,16 @@ async def _unhandled(request: Request, exc: Exception):
 MAX_RUNS = 200
 _RUNS: "OrderedDict[str, MerchandisingRun]" = OrderedDict()
 _EVENTS: "OrderedDict[str, list[dict]]" = OrderedDict()
+
+
+def _persist(run: MerchandisingRun) -> None:
+    """Write a run's CURRENT state through to durable storage.
+
+    Separate from _remember because the in-process ring is a cache and this is
+    the record: every transition a reader could later ask about has to reach
+    the database, not just the first one."""
+    db.save_run(run.run_id, run.caller_id, run.caller_role.value,
+                run.phase.value, run.goal, run.model_dump(mode="json"))
 
 
 def _remember(run: MerchandisingRun) -> None:
@@ -538,8 +551,7 @@ def submit_brief(body: BriefIn,
     _audit(user.user_id, "agent.run.submitted",
            {"run_id": run.run_id, "role": user.role.value})
     _remember(run)
-    db.save_run(run.run_id, user.user_id, user.role.value, run.phase.value,
-                run.goal, run.model_dump(mode="json"))
+    _persist(run)
     _emit(run.run_id, "run.started", {"goal": run.goal,
                                       "scopes": sorted(s.value for s in run.granted_scopes)})
     return {"run_id": run.run_id}
@@ -597,6 +609,11 @@ async def stream_events(run_id: str):
 
         finished = await asyncio.to_thread(run_to_gate, run)
         _remember(finished)
+        # Persist the FINISHED state. Saving only at submit left the stored
+        # run frozen at phase="planning" forever — so a run reloaded after a
+        # restart claimed to be mid-flight when it had gated hours earlier.
+        # Caught by clearing the in-process caches and reading it back.
+        _persist(finished)
 
         if finished.triage_verdict and finished.triage_verdict != "proceed":
             yield (f"event: triage.decided\ndata: "
@@ -651,4 +668,5 @@ def resume(run_id: str, body: ResumeIn,
     if run.phase.value == "explaining":
         run = explainer(run)
     _remember(run)
+    _persist(run)          # a resolved gate is exactly what an auditor asks about
     return {"phase": run.phase.value, "final_slate_id": run.final_slate_id}

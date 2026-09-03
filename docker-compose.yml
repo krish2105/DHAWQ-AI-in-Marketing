@@ -1,0 +1,33 @@
+# Postgres for local development and for the persistence tests.
+#
+# Only this one service. PLAN.md §1 lists a compose file with pgvector, but the
+# vector work never happened: embeddings are a memory-mapped .npy read through
+# core/artifacts.py, and adding an extension nothing queries would be a
+# container for a claim rather than for a feature.
+#
+#   docker compose up -d
+#   export DATABASE_URL=postgresql://dhawq:dhawq@localhost:5432/dhawq
+#   pytest tests/integration/test_postgres_persistence.py
+#
+# Without DATABASE_URL those tests skip and the API runs on its in-process
+# fallback, which is the same path the deployed instance takes today.
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: dhawq
+      POSTGRES_PASSWORD: dhawq
+      POSTGRES_DB: dhawq
+    ports: ["5432:5432"]
+    volumes: ["dhawq_pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      # The API migrates on connect, so nothing should talk to this until it
+      # is genuinely accepting connections — "container started" is not that.
+      test: ["CMD-SHELL", "pg_isready -U dhawq -d dhawq"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  dhawq_pgdata:

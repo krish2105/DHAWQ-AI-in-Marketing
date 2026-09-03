@@ -23,6 +23,46 @@ jobs:
       # deterministic core.
       - run: python -m pytest tests/ -q --tb=short
 
+  persistence:
+    name: postgres persistence
+    runs-on: ubuntu-latest
+    # These tests skip without a server, and skipping silently is how the
+    # missing psycopg_pool dependency survived: DATABASE_URL would have been
+    # set in production, db.init() would have caught its own ImportError, and
+    # the deploy would have looked healthy while persisting nothing. CI
+    # provides a server so the skip cannot hide it.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: dhawq
+          POSTGRES_PASSWORD: dhawq
+          POSTGRES_DB: dhawq
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U dhawq -d dhawq"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      - env:
+          DATABASE_URL: postgresql://dhawq:dhawq@localhost:5432/dhawq
+          DHAWQ_LLM_PROVIDER: stub
+        run: |
+          python -m pytest tests/integration/test_postgres_persistence.py -q
+          # A pass here must mean the tests RAN. If they skip, the job is
+          # green and proves nothing, which is the failure mode being closed.
+          python - <<'PY'
+          import os, sys
+          sys.path.insert(0, ".")
+          from services.api.core import db
+          db.init()
+          assert db.durable()["backend"] == "postgres", db.durable()
+          print("verified: persistence tests ran against a real server")
+          PY
+
   policy:
     name: corpus C integrity
     runs-on: ubuntu-latest
@@ -66,7 +106,7 @@ jobs:
   gates:
     name: the five hard gates
     runs-on: ubuntu-latest
-    needs: [test, policy, boundary]
+    needs: [test, policy, boundary, persistence]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

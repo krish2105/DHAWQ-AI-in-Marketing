@@ -13,6 +13,11 @@ implicit>=0.7.2
 pillow>=10.4
 pyyaml>=6.0
 langgraph>=0.2.50
-psycopg[binary]>=3.2
+# The [pool] extra is NOT optional. core/db.py imports psycopg_pool, and
+# without it db.init() raises ImportError, catches its own exception, and
+# degrades to in-process — so DATABASE_URL would be set, the deploy would
+# look healthy, and persistence would silently never happen. Found by
+# running the migration against a real Postgres instead of trusting it.
+psycopg[binary,pool]>=3.2
 pyjwt>=2.9
 pwdlib[argon2]>=0.2

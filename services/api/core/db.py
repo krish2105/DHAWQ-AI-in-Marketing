@@ -94,6 +94,24 @@ def init() -> None:
         _ready = False
 
 
+def close() -> None:
+    """Shut the pool down cleanly.
+
+    Without this every restart logs "couldn't stop thread 'pool-1-worker-N'
+    within 5.0 seconds" four times and waits for each — on a free instance that
+    already cold-starts, adding seconds to every redeploy for no reason. Found
+    by running against a real Postgres; the in-process fallback has no pool and
+    would never have shown it.
+    """
+    global _pool, _ready
+    if _pool is not None:
+        try:
+            _pool.close()
+        except Exception:                              # noqa: BLE001
+            pass
+    _pool, _ready = None, False
+
+
 def durable() -> dict:
     return {"backend": "postgres" if _ready else "in-process",
             "configured": bool(DATABASE_URL), "error": _error}
