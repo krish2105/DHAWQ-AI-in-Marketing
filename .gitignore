@@ -26,9 +26,10 @@ node_modules/
 .next/
 apps/web/.next/
 apps/web/node_modules/
-apps/web/public/static/*.webp
-apps/web/public/static/*.bin
-apps/web/public/static/meta.json
+# The scene's static assets ARE committed — Vercel builds from git, and these
+# are the gallery. 11MB: four atlas sheets, the mobile sheet, UMAP positions,
+# measured dominant colours, and the article metadata the hover card reads.
+# Immutable per catalogue version and served with a one-year cache header.
 apps/web/tsconfig.tsbuildinfo
 eval/artifacts/*.json
 eval/failures/
