@@ -6,9 +6,10 @@ import { loadSpace, type SpaceData } from "@/lib/space";
 import { Fallback2D } from "@/components/space/Fallback2D";
 
 // R3F is code-split out of the initial bundle (§12.7).
-const Scene = dynamic(() => import("@/components/space/Scene").then((m) => m.Scene), {
-  ssr: false,
-});
+const Scene = dynamic(
+  () => import("@/components/space/SceneRaw").then((m) => m.SceneRaw),
+  { ssr: false },
+);
 
 function webglAvailable(): boolean {
   try {
@@ -39,10 +40,12 @@ export default function SpacePage() {
   /*
    * PROGRESSIVE ENHANCEMENT, ENFORCED (§12.5).
    *
-   * A WebGL2 context being AVAILABLE is not the same as the 3D renderer
-   * actually starting. Observed in practice: the canvas mounts, no error is
-   * thrown, and the renderer never initialises — a silently black scene.
-   * Feature-detection alone would leave the user staring at it.
+   * A WebGL2 context being AVAILABLE is not the same as the renderer actually
+   * starting. This was not hypothetical: under react-three-fiber the canvas
+   * mounted, no error was thrown, and the renderer never initialised — a
+   * silently black scene that feature detection would have called healthy.
+   * The scene now drives three.js directly and starts reliably, but the guard
+   * stays: it costs nothing and it caught a real failure once already.
    *
    * So readiness is confirmed by the renderer itself calling back. If it has
    * not within the deadline we switch to the 2D view, which renders identical
