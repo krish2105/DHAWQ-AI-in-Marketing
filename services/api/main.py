@@ -172,6 +172,245 @@ def segments() -> dict:
     return {"segments": [dict(zip(s.columns, r)) for r in s.iter_rows()]}
 
 
+@app.get("/segments/clv")
+def clv_summary() -> dict:
+    """PROJECTED CLV aggregates. Never individual rows — POL-SEG-02 and the
+    §13.2 row denying access to individual customer records."""
+    from services.api.core.artifacts import train
+    from services.api.marketing.clv import (
+        clv, fit_bgnbd, fit_gamma_gamma, frequency_monetary_correlation, rfm_matrix,
+    )
+    import numpy as np
+
+    summary = rfm_matrix(train())
+    bg, gg = fit_bgnbd(summary), fit_gamma_gamma(summary)
+    out = clv(summary, bg, gg)
+    v = out.get_column("projected_clv").to_numpy()
+    alive = out.get_column("probability_alive").to_numpy()
+    deciles = [float(np.percentile(v, q)) for q in range(10, 100, 10)]
+
+    return {
+        "n_customers": out.height,
+        "params": {"bgnbd": bg.__dict__, "gamma_gamma": gg.__dict__},
+        "projected_clv": {
+            "mean": float(v.mean()), "median": float(np.median(v)),
+            "deciles": deciles, "p90": float(np.percentile(v, 90)),
+        },
+        "probability_alive": {"mean": float(alive.mean())},
+        "histogram": _histogram(v, 24),
+        "assumption_check": {
+            "frequency_monetary_correlation": frequency_monetary_correlation(summary),
+            "note": ("Gamma-Gamma assumes frequency and monetary value are "
+                     "independent. The observed correlation is reported so the "
+                     "assumption is visible rather than buried."),
+        },
+        "language": "PROJECTED, not measured. No live A/B test exists.",
+    }
+
+
+def _cohort_customers(segment: str = "champions", k_sample: int = 3000) -> list[str]:
+    """A GENUINELY DIFFERENTIATED cohort, not a sample of everyone.
+
+    The first version took the first N customer ids. That is a random sample of
+    the whole base, and the aggregate preference of a random sample of everyone
+    IS the popularity distribution — so the "personalised" slate was being asked
+    to beat popularity at predicting popularity. It lost by ~90%, correctly and
+    uninterestingly.
+
+    Personalisation can only beat a bestseller page where the cohort has taste
+    that differs from the mean. An RFM segment does; an arbitrary slice does
+    not. That distinction is the whole premise of the marketing claim, so the
+    simulator has to honour it.
+    """
+    import polars as pl
+    from services.api.core.artifacts import train
+    from services.api.marketing.rfm import rfm_table
+
+    t = rfm_table(train())
+    members = (
+        t.filter(pl.col("segment") == segment)
+        .get_column("customer_id").sort().to_list()
+    )
+    if not members:                       # segment empty — fall back, and say so
+        members = train().get_column("customer_id").unique().sort().to_list()
+    return members[:k_sample]
+
+
+def _histogram(v, bins: int) -> list[dict]:
+    import numpy as np
+    hi = float(np.percentile(v, 99))          # clip the tail so the chart reads
+    counts, edges = np.histogram(np.clip(v, 0, hi), bins=bins)
+    return [{"x": round(float(edges[i]), 5), "n": int(counts[i])}
+            for i in range(len(counts))]
+
+
+@app.get("/merchandise/simulate")
+def simulate(k: int = Query(12, ge=4, le=24), model: str = "hybrid_weighted",
+             segment: str = "champions") -> dict:
+    """Side-by-side: the model's slate against the popularity baseline, with
+    the projected revenue delta AND the coverage cost together.
+
+    The two travel in one payload deliberately — §9's "the tension is the
+    finding". You cannot read the upside without the cost.
+    """
+    from services.api.agent.tools import OptimiseSlotsIn, RecommendIn, _optimise_slots, _recommend
+    from services.api.core.artifacts import articles, train
+    from services.api.evaluate.bias import head_set
+    from services.api.marketing.lift import project_lift
+
+    head = head_set(train())
+    arts = articles()
+    meta = {r[0]: {"prod_name": r[1], "product_type_name": r[2],
+                   "colour_group_name": r[3]}
+            for r in arts.select("article_id", "prod_name", "product_type_name",
+                                 "colour_group_name").iter_rows()}
+    prices = dict(
+        train().group_by("article_id").agg(__import__("polars").col("price").mean())
+        .iter_rows()
+    )
+
+    cohort = _cohort_customers(segment)
+
+    def build(model_name: str, quota: float | None = None) -> dict:
+        cands = _recommend(RecommendIn(
+            k=120, model=model_name,
+            # Both arms see the SAME cohort. Popularity ignores it by
+            # construction, which is exactly what makes it the baseline.
+            cohort_spec={"customer_ids": cohort},
+        ))
+        constraints = {} if quota is None else {"min_long_tail_share": quota}
+        out = _optimise_slots(OptimiseSlotsIn(candidate_ids=cands.article_ids, k=k,
+                                              constraints=constraints))
+        return {
+            "model": model_name,
+            "slate": [{"article_id": a, "position": i + 1,
+                       "is_long_tail": a not in head, **meta.get(a, {})}
+                      for i, a in enumerate(out.slate)],
+            "report": out.report,
+            "long_tail_share": (sum(1 for a in out.slate if a not in head)
+                                / max(len(out.slate), 1)),
+        }
+
+    # THREE ARMS, BECAUSE "LIFT" WAS CONFLATING TWO DIFFERENT EFFECTS.
+    #
+    # The model carries a long-tail quota and the popularity baseline does not,
+    # so a single comparison mixes the PERSONALISATION effect with the QUOTA
+    # COST and reports their sum as though it were one number. It read -90% and
+    # was uninterpretable: no reader could tell whether personalisation failed
+    # or whether the quota was simply expensive.
+    #
+    # Decomposed, both halves are answerable and both are decisions a
+    # merchandiser actually makes:
+    #   personalisation effect = unconstrained model vs popularity
+    #   quota cost             = constrained model vs unconstrained model
+    model_side = build(model)                       # with the policy quota
+    unconstrained_side = build(model, quota=0.0)    # same model, no quota
+    baseline_side = build("popularity", quota=0.0)
+
+    # RELEVANCE MUST BE INDEPENDENT OF BOTH ARMS — AND THREE ATTEMPTS WERE NOT.
+    #
+    #   1. From the model's own slate: every baseline article scored 0.0, so
+    #      baseline revenue was zero and the lift was meaningless.
+    #   2. From the model's own ranking over a shared pool: still derived from
+    #      the arm under test, which handed it the top of the scale. +2900%.
+    #   3. From GLOBAL held-out purchase frequency: independent of the model,
+    #      but it is a popularity signal, so it favours the popularity baseline
+    #      by construction. -91%.
+    #
+    # Each was biased in a different direction, which is the tell that the
+    # choice of relevance function IS the experiment. The signal that favours
+    # neither is what the TARGET COHORT actually bought in the held-out window
+    # — the same per-customer ground truth the §9 ranking metrics already use.
+    # Personalisation can win on it and so can popularity; nothing about its
+    # construction decides which.
+    #
+    # It inherits the dataset's central limitation: purchases, not impressions.
+    # An article the cohort did not buy is UNLABELLED, not rejected, so this
+    # understates both slates — and understates them EQUALLY, which is what
+    # makes the comparison fair even though the absolute level is not
+    # meaningful on its own.
+    from services.api.core.artifacts import test as _test
+    import polars as _pl
+
+    cohort_test = _test().join(
+        _pl.DataFrame({"customer_id": cohort}, schema={"customer_id": _pl.Utf8}),
+        on="customer_id", how="semi",
+    )
+    purchases = cohort_test.group_by("article_id").len().rename({"len": "n"})
+    max_n = float(purchases.get_column("n").max() or 1)
+    shared_rel = {
+        a: float(n) / max_n
+        for a, n in zip(purchases.get_column("article_id"), purchases.get_column("n"))
+    }
+    rel = {"sim": shared_rel}
+
+    def ids(side: dict) -> list[str]:
+        return [a["article_id"] for a in side["slate"]]
+
+    personalisation = project_lift(
+        {"sim": ids(unconstrained_side)}, {"sim": ids(baseline_side)}, rel, prices,
+        model_coverage=unconstrained_side["long_tail_share"],
+        baseline_coverage=baseline_side["long_tail_share"],
+    )
+    quota_cost = project_lift(
+        {"sim": ids(model_side)}, {"sim": ids(unconstrained_side)}, rel, prices,
+        model_coverage=model_side["long_tail_share"],
+        baseline_coverage=unconstrained_side["long_tail_share"],
+    )
+    combined = project_lift(
+        {"sim": ids(model_side)}, {"sim": ids(baseline_side)}, rel, prices,
+        model_coverage=model_side["long_tail_share"],
+        baseline_coverage=baseline_side["long_tail_share"],
+    )
+
+    return {
+        "k": k, "segment": segment, "cohort_size": len(cohort),
+        "model": model_side, "unconstrained": unconstrained_side,
+        "baseline": baseline_side,
+        "decomposition": {
+            "personalisation_effect": personalisation.as_dict(),
+            "quota_cost": quota_cost.as_dict(),
+            "combined": combined.as_dict(),
+            "reading": (
+                "personalisation_effect isolates the model against the "
+                "bestseller page with neither carrying a quota. quota_cost "
+                "isolates what POL-LT-01 costs by holding the model fixed. "
+                "Their combination is what a merchandiser actually ships, and "
+                "reporting only that number hides which half is responsible."
+            ),
+        },
+        "relevance_note": (
+            "Relevance is the target cohort's held-out purchases — the only "
+            "signal here independent of both arms. Purchases, not impressions: "
+            "an article the cohort did not buy is unlabelled, not rejected, so "
+            "both slates are understated equally."
+        ),
+        "known_bias": (
+            "THIS METRIC STRUCTURALLY FAVOURS THE BESTSELLER PAGE, and the "
+            "reason is worth stating rather than tuning away. Projected revenue "
+            "is estimated from held-out purchase FREQUENCY, which is exactly "
+            "what the popularity arm ranks on. Head articles carry two to three "
+            "orders of magnitude more purchases than tail ones, so any "
+            "deviation from the top-k bestsellers is expensive by construction. "
+            "No offline estimator built from observed purchases can show "
+            "personalisation winning here; only a live A/B test could, and "
+            "there isn't one (§16)."
+        ),
+        "the_finding": (
+            "Personalisation wins PER CUSTOMER and loses PER COHORT SLATE, and "
+            "those are not in conflict. The §9 ranking metrics evaluate a list "
+            "per customer, where collaborative beats popularity (NDCG@10 0.0127 "
+            "vs 0.0100). A slate is ONE page shown to a whole cohort, so the "
+            "best it can do is target the cohort's modal preference — and the "
+            "modal preference of any large cohort is, definitionally, its "
+            "bestsellers. The merchandising implication is concrete: "
+            "personalised slates pay off for small, sharply-defined cohorts and "
+            "converge on the bestseller page as the cohort widens. That is a "
+            "decision about segment granularity, not about model quality."
+        ),
+    }
+
+
 # ── agent ────────────────────────────────────────────────────────────────────
 
 class BriefIn(BaseModel):

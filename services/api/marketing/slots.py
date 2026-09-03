@@ -162,6 +162,20 @@ def optimise_slots(
         elif why != "POL-SLT-02":
             report.rejected[why] = report.rejected.get(why, 0) + 1
 
+    # ── ORDER BY VALUE, INDEPENDENTLY OF SELECTION ──────────────────────────
+    #
+    # The quota governs COMPOSITION; position governs VALUE. Pass 1 reserves
+    # tail slots first (which produces a better slate than filling by score and
+    # repairing afterwards), but leaving them in selection order put long-tail
+    # articles in positions 1-3 — the highest-value slots under position decay.
+    # The projected-revenue simulation showed the cost immediately: the same
+    # compliant slate lost most of its projected revenue purely to slot order.
+    #
+    # Sorting by score afterwards keeps the quota exactly satisfied and hands
+    # the hero slots to the strongest items, which is also what a merchandiser
+    # would do. POL-SLT-05's tie-break still applies within equal scores.
+    chosen.sort(key=lambda c: (-c.score, not c.is_long_tail, c.price, c.article_id))
+
     got_tail = sum(1 for c in chosen if c.is_long_tail)
 
     # POL-LT-01 — if the quota is still short, the slate is NOT compliant.

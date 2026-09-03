@@ -173,6 +173,10 @@ def _recommend(args: RecommendIn) -> RecommendOut:
     members = args.cohort_spec.get("customer_ids")
     if not members:
         members = tr.get_column("customer_id").unique().sort().to_list()[:40]
+    # Sampling the cohort is fine; sampling a DIFFERENT population is not. The
+    # first version always averaged the first 40 customers of the whole train
+    # set regardless of the cohort passed in, so every "personalised" slate was
+    # personalised to the same arbitrary 40 people.
     scores = None
     for c in members[:40]:
         v = arm.score_customer(c)
