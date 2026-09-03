@@ -11,6 +11,7 @@ const ROUTES = [
   { href: "/merchandise", label: "Merchandise" },
   { href: "/segments", label: "Segments" },
   { href: "/evaluate", label: "Evaluate" },
+  { href: "/deck", label: "Deck" },
 ];
 
 export function Nav() {
