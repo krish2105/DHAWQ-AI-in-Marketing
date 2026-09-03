@@ -86,7 +86,8 @@ Tests: `python3 -m pytest tests/ -q` — 129 passing.
 | **D15–D19** web | design tokens, 3 themes, 3D scene, agent console, merchandise, segments, evaluate |
 | **D20** security review | 38 tests mapped to the OWASP LLM Top 10 · 3-layer injection detection |
 | **D21** CI + deploy | five jobs, gates block the build; live on Vercel + Render |
-| — | 221 tests · Postgres persistence with a measured degradation path |
+| **D22** operating case | 210 slates audited · governance value measured, cost declared |
+| — | 272 tests · Postgres persistence with a measured degradation path |
 
 ---
 
@@ -239,6 +240,55 @@ from the cost of the long-tail quota, because one number was summing them.
 
 ---
 
+### The case that does not need an A/B test
+
+The revenue case is weak and stays weak — projected session lift is −11.8% with
+a 95% interval of [−25.83, 3.96]. The governance case is measurable without
+one. 210 slates (35 cohorts × 5 recommenders × 6 slate sizes), each built twice
+and audited against corpus C by a **second implementation** of the rules, so
+the auditor cannot simply agree with the optimiser:
+
+| | rate |
+|---|---|
+| revenue-ranked slates that breach the policy | **100.0%** (mean 2.57 rules each) |
+| governed slates that breach and **declare it** → a human decides | 55.7% |
+| governed slates that ship non-compliant **silently** | **0.0%** |
+
+That last row was 2.9% until the audit found the cause: six slates shipped
+underfilled with `POL-SLT-03` missing from `binding_constraints`, because
+`POL-LT-01` had already bound and the guard only recorded it when nothing else
+had. Silent non-compliance is the one failure the escalation path exists to
+prevent.
+
+**The frontier plot would have picked the wrong model to ship.** Escalation
+load varies 40× across the arms, and catalogue coverage does not predict it:
+
+| model | escalates | tail share of that cohort's pool |
+|---|---|---|
+| hybrid_weighted | 2.4% | 36.9% |
+| content | 11.9% | 63.9% |
+| hybrid_cascade | 71.4% | 3.1% |
+| collaborative | 92.9% | 0.4% |
+| popularity | 100.0% | 0.0% |
+
+`hybrid_cascade` has the best catalogue coverage on the frontier (0.655) and
+the second-worst per-cohort tail availability. Coverage is measured across *all*
+users; whether one page can satisfy the long-tail quota unaided is a different
+question, and only the second answers it.
+
+**The cost side is a range, and its inputs are labelled.** Four constants —
+what a merchandiser's hour costs, how long a compliant slate takes by hand, how
+long an escalation takes to review, how many slates a week — are *declared*,
+not observed, each with a low/high range and a justification. Output: **19–73
+hours saved per 100 slates**, never a point estimate. The number that survives
+disagreeing with all four is the break-even: at a 55.7% escalation rate the
+system costs **1.1–3.3 human minutes per slate**, and it pays the moment a
+compliant page takes longer than that to build and check by hand. That figure
+moves with the escalation rate and review time only — doubling the wage does
+not touch it, and a test pins that.
+
+---
+
 ## Honest limitations
 
 - **The golden set is reviewed but NOT independently reviewed**
@@ -335,6 +385,14 @@ from the cost of the long-tail quota, because one number was summing them.
 - **No A/B test, so no measured lift anywhere.** Every revenue figure in this
   project is projected from held-out purchases. The 95% CI on the headline
   session-lift number includes zero, and the page says so.
+- **A prevented policy breach is not damage avoided.** The operating case
+  measures how often the *alternative* would ship non-compliant. DHAWQ has
+  never run in production, and nothing here claims a breach was stopped in the
+  wild.
+- **The four cost assumptions are declared, not observed.** They carry ranges
+  and the word "declared" in the UI and the API response, and a test asserts
+  none of them may ever claim to be measured. Replace them with a real team's
+  numbers before quoting any hours figure.
 
 ---
 

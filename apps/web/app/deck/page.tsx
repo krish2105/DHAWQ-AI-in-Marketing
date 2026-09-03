@@ -36,14 +36,16 @@ export default function Deck() {
     Promise.all([
       apiGet<any>("/api/evaluate/latest"),
       apiGet<any>("/api/merchandise/session-lift"),
-    ]).then(([ev, sl]) => setD({
+      apiGet<any>("/api/merchandise/operating-case"),
+    ]).then(([ev, sl, oc]) => setD({
       agent: ev.ok ? ev.data.agent : null,
       recs: ev.ok ? ev.data.recommenders : null,
       lift: sl.ok ? sl.data : null,
+      ops: oc.ok ? oc.data : null,
     }));
   }, []);
 
-  const recs = d.recs, agent = d.agent, lift = d.lift;
+  const recs = d.recs, agent = d.agent, lift = d.lift, ops = d.ops;
   const arm = (n: string) => recs?.frontier?.find((f: any) => f.model === n);
   const num = (v: any, f = 4) => (typeof v === "number" ? v.toFixed(f) : "—");
 
@@ -129,6 +131,28 @@ export default function Deck() {
         "For a retailer holding inventory, that is the trade worth making.",
       ],
       note: "Dead stock is a cost a bestseller page never addresses." },
+
+    { kind: "data", title: "The case that does not need an A/B test",
+      body: "The revenue interval includes zero and no offline estimator can close it. This half is measured: 210 slates, built twice, audited against the policy.",
+      metric: () => ops ? <div style={{ display: "grid", gap: "var(--space-5)",
+                                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+        <Stat value={`${(ops.measured.ungoverned_breach_rate * 100).toFixed(0)}%`}
+              label="of revenue-ranked slates breach the merchandising policy" />
+        <Stat value={`${(ops.measured.silent_breach_rate * 100).toFixed(1)}%`}
+              label="ship non-compliant WITHOUT saying so — the rest escalate to a human" />
+        <Stat value={`${ops.break_even.manual_minutes_to_break_even_low}–${ops.break_even.manual_minutes_to_break_even_high} min`}
+              label="human cost per slate. It pays the moment a compliant page takes longer than that by hand" />
+      </div> : <div style={{ color: "var(--text-faint)" }}>API unavailable — no number shown rather than a stale one.</div>,
+      note: "Hours saved is reported as a RANGE (19–73 per 100 slates), never a point estimate: four of its inputs are declared assumptions, not measurements, and a single figure built on them would read as a finding." },
+
+    { kind: "point", title: "The frontier plot would have picked the wrong model",
+      body: "Escalation load varies 40× across the five arms, and catalogue coverage does not predict it.",
+      bullets: [
+        "hybrid_cascade: best coverage on the frontier (0.655) — escalates 71% of slates.",
+        "hybrid_weighted: worse coverage (0.468) — escalates 2.4%.",
+        "The cause is tail share WITHIN one cohort's candidate list: 3.1% against 36.9%.",
+      ],
+      note: "Coverage is measured across all users. Whether one page can satisfy the long-tail quota unaided is a different question, and only the second answers it." },
 
     { kind: "data", title: "The agent, and what it refuses",
       body: "Supervisor plus specialists, typed read-only tools, a nine-criteria critic, human gates on everything irreversible.",
