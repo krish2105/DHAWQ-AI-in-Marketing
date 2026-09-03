@@ -12,3 +12,4 @@ data/processed/
 *.osm.pbf
 *.osrm*
 .DS_Store
+apps/web/tsconfig.tsbuildinfo
