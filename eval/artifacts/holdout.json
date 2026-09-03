@@ -1,0 +1,33 @@
+{
+  "n": 81,
+  "block_recall": 0.6274509803921569,
+  "block_verdict_exact": 0.5686274509803921,
+  "false_refusal_rate": 0.06666666666666667,
+  "by_stratum": {
+    "standard": {
+      "pass": 22,
+      "n": 23
+    },
+    "cold_start": {
+      "pass": 6,
+      "n": 8
+    },
+    "constraint_conflicting": {
+      "pass": 7,
+      "n": 14
+    },
+    "hard_negative": {
+      "pass": 10,
+      "n": 16
+    },
+    "unanswerable": {
+      "pass": 8,
+      "n": 12
+    },
+    "adversarial": {
+      "pass": 4,
+      "n": 8
+    }
+  },
+  "note": "held out from acts.py lexicon tuning; labels copied from briefs_v1, never generated"
+}

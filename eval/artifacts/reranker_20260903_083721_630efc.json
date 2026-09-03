@@ -1,0 +1,187 @@
+{
+  "run_id": "reranker_20260903_083721_630efc",
+  "created_at": "2026-09-03T08:37:21+05:30",
+  "corpus": "B",
+  "kind": "llm_reranker_benchmark",
+  "protocol": {
+    "n_customers": 28,
+    "top_k": 20,
+    "ks": [
+      5,
+      10,
+      20
+    ],
+    "candidate_pool": 50,
+    "base_arm": "hybrid_weighted",
+    "sample_note": "Smaller than the main harness because local inference costs seconds per slate. All arms are re-run on the SAME customers, so the comparison is like-for-like."
+  },
+  "results": {
+    "popularity": {
+      "ranking": {
+        "mrr": 0.003980539584254755,
+        "precision@5": 0.0,
+        "recall@5": 0.0,
+        "ndcg@5": 0.0,
+        "map@5": 0.0,
+        "hit_rate@5": 0.0,
+        "precision@10": 0.0,
+        "recall@10": 0.0,
+        "ndcg@10": 0.0,
+        "map@10": 0.0,
+        "hit_rate@10": 0.0,
+        "precision@20": 0.0035714285714285718,
+        "recall@20": 0.020833333333333336,
+        "ndcg@20": 0.006874046035406729,
+        "map@20": 0.001207061772077252,
+        "hit_rate@20": 0.07142857142857142
+      },
+      "beyond_accuracy": {
+        "catalogue_coverage": 0.0016976675524062593,
+        "gini": 0.9985132228267748,
+        "long_tail_exposure": 0.0
+      },
+      "bias": {
+        "popularity_lift": 12.14554778475439
+      }
+    },
+    "content": {
+      "ranking": {
+        "mrr": 0.03928571428571429,
+        "precision@5": 0.0071428571428571435,
+        "recall@5": 0.002976190476190476,
+        "ndcg@5": 0.01211286447405772,
+        "map@5": 0.0071428571428571435,
+        "hit_rate@5": 0.03571428571428571,
+        "precision@10": 0.0071428571428571435,
+        "recall@10": 0.01488095238095238,
+        "ndcg@10": 0.01270513356180457,
+        "map@10": 0.0047619047619047615,
+        "hit_rate@10": 0.07142857142857142,
+        "precision@20": 0.0071428571428571435,
+        "recall@20": 0.020833333333333332,
+        "ndcg@20": 0.01526156433853522,
+        "map@20": 0.00505952380952381,
+        "hit_rate@20": 0.07142857142857142
+      },
+      "beyond_accuracy": {
+        "catalogue_coverage": 0.026719811042220255,
+        "gini": 0.9765669155173142,
+        "long_tail_exposure": 0.6857142857142857
+      },
+      "bias": {
+        "popularity_lift": 1.4023672727727545
+      }
+    },
+    "collaborative": {
+      "ranking": {
+        "mrr": 0.0,
+        "precision@5": 0.0,
+        "recall@5": 0.0,
+        "ndcg@5": 0.0,
+        "map@5": 0.0,
+        "hit_rate@5": 0.0,
+        "precision@10": 0.0,
+        "recall@10": 0.0,
+        "ndcg@10": 0.0,
+        "map@10": 0.0,
+        "hit_rate@10": 0.0,
+        "precision@20": 0.0,
+        "recall@20": 0.0,
+        "ndcg@20": 0.0,
+        "map@20": 0.0,
+        "hit_rate@20": 0.0
+      },
+      "beyond_accuracy": {
+        "catalogue_coverage": 0.027679362267493356,
+        "gini": 0.9750470988513504,
+        "long_tail_exposure": 0.05
+      },
+      "bias": {
+        "popularity_lift": 4.333136016176863
+      }
+    },
+    "hybrid_weighted": {
+      "ranking": {
+        "mrr": 0.017857142857142856,
+        "precision@5": 0.0071428571428571435,
+        "recall@5": 0.002976190476190476,
+        "ndcg@5": 0.007642366597661698,
+        "map@5": 0.0035714285714285718,
+        "hit_rate@5": 0.03571428571428571,
+        "precision@10": 0.0035714285714285718,
+        "recall@10": 0.002976190476190476,
+        "ndcg@10": 0.00495937299548409,
+        "map@10": 0.0017857142857142859,
+        "hit_rate@10": 0.03571428571428571,
+        "precision@20": 0.0017857142857142859,
+        "recall@20": 0.002976190476190476,
+        "ndcg@20": 0.004424573715915917,
+        "map@20": 0.001488095238095238,
+        "hit_rate@20": 0.03571428571428571
+      },
+      "beyond_accuracy": {
+        "catalogue_coverage": 0.026572187776793623,
+        "gini": 0.9767553109227158,
+        "long_tail_exposure": 0.20238095238095238
+      },
+      "bias": {
+        "popularity_lift": 3.4343642283337457
+      }
+    },
+    "llm_reranker": {
+      "ranking": {
+        "mrr": 0.0018796992481203006,
+        "precision@5": 0.0,
+        "recall@5": 0.0,
+        "ndcg@5": 0.0,
+        "map@5": 0.0,
+        "hit_rate@5": 0.0,
+        "precision@10": 0.0,
+        "recall@10": 0.0,
+        "ndcg@10": 0.0,
+        "map@10": 0.0,
+        "hit_rate@10": 0.0,
+        "precision@20": 0.0017857142857142859,
+        "recall@20": 0.002976190476190476,
+        "ndcg@20": 0.001622605297320652,
+        "map@20": 0.00015664160401002505,
+        "hit_rate@20": 0.03571428571428571
+      },
+      "beyond_accuracy": {
+        "catalogue_coverage": 0.027753173900206672,
+        "gini": 0.9748435896354408,
+        "long_tail_exposure": 0.23095238095238096
+      },
+      "bias": {
+        "popularity_lift": 3.214187807522069
+      }
+    }
+  },
+  "rank_stability": {
+    "runs": 5,
+    "customers": 4,
+    "k": 10,
+    "max_rank_delta": 0,
+    "mean_max_rank_delta": 0.0,
+    "mean_slate_churn": 0.0,
+    "interpretation": "max_rank_delta is the worst position an article moved across identical repeat runs. Temperature is pinned at 0; anything above a couple of positions means the ranking is sampling noise."
+  },
+  "cost_and_latency": {
+    "provider": "ollama",
+    "model": "llama3.2:3b",
+    "calls": 36,
+    "failure_rate": 0.0,
+    "invalid_output_rate": 0.9167,
+    "mean_latency_s": 2.125,
+    "latency_per_1000_slates_s": 2125.1,
+    "cost_per_1000_slates_usd": 0.0,
+    "cost_note": "0.00 on local inference. The number that matters for a hosted model is latency_per_1000_slates_s, which does not go away."
+  },
+  "verdict": {
+    "ndcg10_delta_pp_vs_hybrid": -0.496,
+    "beats_hybrid": false,
+    "reading": "The re-ranker does NOT beat the hybrid by -0.496pp NDCG@10 at 2125s per 1,000 slates against a sub-second deterministic arm. \u00a76.1: a re-ranker that wins by a fraction of a point at many times the cost has lost."
+  },
+  "production_path": false,
+  "production_note": "Benchmarked arm only. Not exposed in the agent tool catalogue \u2014 RecommendIn's model enum omits it, so the agent cannot select it even by accident."
+}

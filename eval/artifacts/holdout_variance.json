@@ -1,0 +1,28 @@
+{
+  "draws": [
+    {
+      "set": "holdout_v2",
+      "n": 80,
+      "block_recall": 0.74,
+      "block_verdict_exact": 0.68,
+      "false_refusal_rate": 0.0
+    },
+    {
+      "set": "holdout_v3",
+      "n": 80,
+      "block_recall": 0.78,
+      "block_verdict_exact": 0.74,
+      "false_refusal_rate": 0.0
+    },
+    {
+      "set": "holdout_v4",
+      "n": 79,
+      "block_recall": 0.7347,
+      "block_verdict_exact": 0.7143,
+      "false_refusal_rate": 0.0
+    }
+  ],
+  "block_recall_mean": 0.7516,
+  "block_recall_sd": 0.0248,
+  "note": "Three independent paraphrase draws scored against ONE code version. A single draw of ~80 briefs has visible sampling noise, so quoting one number to three decimals would overstate what was measured. The spread is the honest precision of this benchmark."
+}

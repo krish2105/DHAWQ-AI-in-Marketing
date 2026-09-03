@@ -1,0 +1,7 @@
+{
+  "briefs": 131,
+  "blocked_deterministically": 62,
+  "share_blocked_without_a_model": 0.4733,
+  "triage_latency_ms": 1.5264,
+  "note": "A blocked brief never reaches a model: no classification call, no planning call, no retrieval, no critic. On the golden set that is 62/131 briefs served for the cost of a dict lookup. The saving is real but it is not the reason the layer exists \u2014 correctness is; this is a consequence worth reporting."
+}
