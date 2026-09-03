@@ -1,0 +1,79 @@
+name: CI
+
+# THE GATES ARE THE BUILD. ARCHITECTURE.md §10.1: "Do not negotiate with a
+# gate. There is no 'we improved it to 0.02'." eval/run.py exits non-zero if
+# any of the five fails, so a regression cannot merge.
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  test:
+    name: unit · property · invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      # Artefact-dependent tests skip themselves when data/ is absent (it is
+      # gitignored — 28GB of H&M does not belong in CI). Everything that does
+      # NOT need the frozen parquet still runs, which is the whole
+      # deterministic core.
+      - run: python -m pytest tests/ -q --tb=short
+
+  policy:
+    name: corpus C integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install pydantic pyyaml
+      # POLICY.md is generated from policy.yaml. If they drift, the critic
+      # reads one set of numbers while the optimiser enforces another.
+      - run: python services/api/rag/corpora/policy/render.py --check
+
+  boundary:
+    name: permission boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The §4 diagram is a permission boundary. services/api/ may never import
+      # pipelines/ — artefacts cross that line as frozen files plus a manifest,
+      # never as a live call. Enforced here rather than trusted.
+      - name: services/api must not import pipelines
+        run: |
+          if grep -rn --include=*.py -E '^\s*(from|import)\s+pipelines' services/api/; then
+            echo "::error::services/api imports pipelines — the §4 boundary is broken"
+            exit 1
+          fi
+          echo "boundary intact"
+
+  web:
+    name: web typecheck · build
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: apps/web/package-lock.json }
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+
+  gates:
+    name: the five hard gates
+    runs-on: ubuntu-latest
+    needs: [test, policy, boundary]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      # Runs on the deterministic stub provider — no API key, no network, no
+      # cost. A test suite whose result depends on a language model is not a
+      # test suite.
+      - env: { DHAWQ_LLM_PROVIDER: stub }
+        run: python eval/run.py --agent --no-readme

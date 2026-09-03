@@ -33,9 +33,19 @@ def _require(path: Path, pipeline: str) -> Path:
     return path
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=8)
 def manifest(name: str = "subsample_v1") -> dict:
-    return json.loads(_require(MANIFESTS / f"{name}.json", "01_subsample.py").read_text())
+    """Read a pipeline manifest.
+
+    This is the ONLY way the API sees pipeline output. Importing
+    pipelines.common to do it would cross the §4 permission boundary — CI
+    greps for exactly that, and caught it once already when the /space/manifest
+    endpoint took the shortcut.
+    """
+    pipeline = {"subsample_v1": "01_subsample.py", "embed_v1": "02_embed.py",
+                "umap_v1": "03_project_umap.py", "atlas_v1": "04_build_atlas.py",
+                "graph_v1": "05_build_graph.py"}.get(name, "the relevant pipeline")
+    return json.loads(_require(MANIFESTS / f"{name}.json", pipeline).read_text())
 
 
 @lru_cache(maxsize=1)

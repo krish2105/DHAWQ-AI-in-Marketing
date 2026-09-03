@@ -1,0 +1,7 @@
+# Build-time only. NEVER installed on the API host — pipelines/ is import-
+# forbidden from services/api/, and keeping torch off the server is what makes
+# that boundary cheap to enforce as well as correct.
+-r requirements.txt
+torch>=2.4
+open_clip_torch>=2.26
+umap-learn>=0.5.6

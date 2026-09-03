@@ -80,7 +80,10 @@ def health() -> dict:
 
 @app.get("/space/manifest")
 def space_manifest() -> dict:
-    from pipelines.common import read_manifest
+    # Via core.artifacts, NOT pipelines.common — services/api never imports
+    # pipelines (§4). Artefacts cross that line as frozen files plus a
+    # manifest, never as a live call.
+    from services.api.core.artifacts import manifest as read_manifest
     atlas = read_manifest("atlas_v1")
     umap = read_manifest("umap_v1")
     return {

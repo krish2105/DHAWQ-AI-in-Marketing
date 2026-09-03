@@ -1,0 +1,35 @@
+# Render blueprint. PLAN.md D0-3.
+#
+# The server surface is deliberately small: the atlas, positions, colours, the
+# evaluation reports and corpus C are static assets on Vercel's CDN. The
+# gallery, the frontier plot and the evaluation view all render with this
+# service asleep — which matters on a free tier and is worth having regardless.
+#
+# VERIFY BEFORE THE GRADING WINDOW: free web services spin down after
+# inactivity and free Postgres instances expire. Either would be serious for a
+# live MVP — a 50s cold start during marking, or a database deleted mid-term.
+# Budget a starter tier for the grading month or add a keep-warm cron.
+
+services:
+  - type: web
+    name: dhawq-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    plan: free
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: DHAWQ_LLM_PROVIDER
+        value: stub          # no key on the host; swap when one exists
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dhawq-db
+          property: connectionString
+      - key: ALLOWED_ORIGIN
+        sync: false          # set to the Vercel URL
+
+databases:
+  - name: dhawq-db
+    plan: free
+    postgresMajorVersion: "16"
