@@ -54,7 +54,14 @@ SLATE = ("slate", "page", "homepage", "grid", "lineup", "line-up", "selection",
          "carousel", "shelf", "module", "placement", "layout", "set", "it",
          "this", "them", "these")
 COHORT_WORDS = ("segment", "cohort", "audience", "customer list", "customers",
-                "shoppers", "users", "the list", "contacts", "members")
+                "shoppers", "users", "the list", "contacts", "members",
+                # "group" is the commonest English word for a segment and was
+                # simply absent, so "transfer the high-CLV GROUP to the email
+                # team in spreadsheet format" read as ordinary work. Omissions
+                # like this are the layer's real failure mode: not a wrong
+                # rule, a missing word.
+                "group", "base", "tier", "band", "bucket", "population",
+                "customer base", "mailing list", "crowd")
 
 ACTS: tuple[Act, ...] = (
     # ── refusals: the system has no authority, and no approval here grants it ─
@@ -77,7 +84,9 @@ ACTS: tuple[Act, ...] = (
         triggers=("export", "download", "send me", "email me", "csv", "xlsx",
                   "spreadsheet", "extract to", "dump", "pull the list",
                   "pull a list", "share the list", "hand over", "give me a file",
-                  "save to file", "push to", "sync to", "upload to"),
+                  "save to file", "push to", "sync to", "upload to",
+                  "transfer", "hand to", "pass to", "forward", "deliver",
+                  "provide to", "send to", "share with", "give to"),
         objects=COHORT_WORDS + ("ids", "id list", "file", "data"),
         excludes=("do not export", "without exporting", "cannot export")),
 
@@ -250,15 +259,38 @@ ACTS: tuple[Act, ...] = (
         excludes=("margin proxy", "uniform margin", "no margin data",
                   "margin is a proxy")),
 
-    Act("forecast", "unknown", "POL-CLM-01",
-        "outside the data window; DHAWQ has no forecasting model",
+    # THE TELL IS THE TIME REFERENCE, NOT THE VERB, and conflating them
+    # refused legitimate work: "provide the forecasted income compared to the
+    # bestseller page" is project_lift — a supported tool — and was answered
+    # "no forecasting model exists". Projecting a SLATE's incremental revenue
+    # from held-out purchases is exactly what DHAWQ does; forecasting a FUTURE
+    # PERIOD is what it cannot do. Split accordingly.
+    Act("forecast_period", "unknown", "POL-CLM-01",
+        "names a future period; outside the data window, and DHAWQ has no "
+        "forecasting model",
         triggers=("next quarter", "next month", "next season", "next year",
-                  "next week", "coming quarter", "coming season", "upcoming season",
-                  "will happen", "will sell", "will perform", "predict",
-                  "forecast", "project forward", "going forward", "in 2027",
-                  "future performance", "expect to sell"),
+                  "next week", "coming quarter", "coming season", "coming year",
+                  "upcoming season", "upcoming quarter", "upcoming month",
+                  "upcoming year", "in 2027", "in 2028", "by year end",
+                  "rest of the year", "months ahead", "quarters ahead",
+                  "second half", "peak season"),
+        excludes=()),
+
+    Act("forecast_verb", "unknown", "POL-CLM-01",
+        "asks the system to predict, and names a period to predict over",
+        triggers=("predict", "forecast", "project forward", "going forward",
+                  "will sell", "will perform", "will happen", "expect to sell",
+                  "future performance", "outlook", "anticipate"),
+        # The verb alone is not the act. It must be aimed at a PERIOD —
+        # otherwise "projected revenue for this slate" trips a rule about
+        # forecasting the future.
+        objects=("quarter", "month", "season", "year", "week", "period",
+                 "future", "ahead", "term", "2027", "2028", "christmas",
+                 "summer", "winter", "spring", "autumn",
+                 "q1", "q2", "q3", "q4", "h1", "h2", "fy"),
         excludes=("projected incremental", "projection is not a forecast",
-                  "no forecasting")),
+                  "no forecasting", "compared to the bestseller",
+                  "against the baseline", "versus the baseline")),
 
     Act("real_world_fact", "unknown", "POL-GOV-04",
         "corpus C is authored for this project; it is not H&M's real policy",

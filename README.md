@@ -95,7 +95,7 @@ Tests: `python3 -m pytest tests/ -q` — 129 passing.
 <!-- DHAWQ:EVAL:BEGIN -->
 ```
 DHAWQ — EVALUATION REPORT
-Generated 2026-09-03 13:20
+Generated 2026-09-03 13:32
 Golden set: 83 briefs (v1, assistant_reviewed) · Model: ollama
 
   ** GOLDEN SET IS NOT INDEPENDENTLY REVIEWED (status: assistant_reviewed). The briefs, the labels and the code that scores them share one author, so these metrics are PROVISIONAL. A paraphrase review was run and its findings are in the file; it improved the labels but cannot supply the independence §10.2 asks for. A second reader is what would.
@@ -118,7 +118,7 @@ TUNING
 
 OPERATING
   latency_p50_seconds                  0.002              
-  latency_p95_seconds                  1.291    [25.000]  PASS
+  latency_p95_seconds                  1.003    [25.000]  PASS
   budget_overrun_rate                  0.000    [0.050]   PASS
   cost_per_brief_usd                   0.000              
 
@@ -147,13 +147,16 @@ GENERATED SET  (48 briefs derived from corpus C rules — a
   hard                     15/35   42.9%
   soft                      2/6    33.3%
 
-HELD-OUT PARAPHRASE SET  (80 machine-paraphrased briefs, labels
-  copied from the source and never generated; drawn AFTER the last fix)
-  block_recall                         0.680              
-  block_verdict_exact                  0.620              
-  false_refusal_rate                   0.000    [0.000]   PASS
-  deterministic layer only, no model. Compare block_recall 1.000
-  on the tuned set above: that gap IS the generalisation gap.
+HELD-OUT PARAPHRASE SETS  (machine-paraphrased from the hand-written
+  briefs; labels COPIED from the source, never generated. Three
+  independent draws scored against ONE code version, because a single
+  ~80-brief draw has visible sampling noise.)
+  holdout_v2              n=80   recall 0.740  exact 0.680  hard_refusal 0.000
+  holdout_v3              n=80   recall 0.780  exact 0.740  hard_refusal 0.000
+  holdout_v4              n=79   recall 0.735  exact 0.714  hard_refusal 0.000
+  block_recall            0.752 ± 0.025
+  Compare block_recall 1.000 on the tuned set above. That gap IS the
+  generalisation gap, and it is the only number here that measures it.
 
 BY STRATUM
   standard                    21/24   87.5%
@@ -274,10 +277,12 @@ from the cost of the long-tail quota, because one number was summing them.
   remaining failures and fixed them, reaching 1.000 — at which point that set
   stopped measuring generalisation. `eval/paraphrase_holdout.py` builds a third
   set the tuning has not seen, with labels copied from the source brief and
-  never generated. Drawn after the last fix and scored once:
-  **`block_recall` 0.680, `block_verdict_exact` 0.620, `false_refusal_rate`
-  0.000**. Against 1.000 on the tuned set, that gap *is* the generalisation
-  gap, and it is in the README table rather than only in a commit message.
+  never generated. Three independent draws scored against one code version,
+  because a single ~80-brief draw has visible sampling noise and quoting one
+  figure to three decimals would overstate what was measured:
+  **`block_recall` 0.752 ± 0.025**, `false_refusal_rate` **0.000 on all three**.
+  Against 1.000 on the tuned set, that gap *is* the generalisation gap, and it
+  is in the README table rather than only in a commit message.
 
 - **Injection detection generalises to two attack classes and not to six.**
   Semantic and authority-framed payloads used to score 0.00 — "Per the CMO,

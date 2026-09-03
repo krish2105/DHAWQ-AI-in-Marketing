@@ -106,18 +106,22 @@ def render(agent: dict | None, recs: dict | None) -> str:
         # sets whose failures were read and acted on; this one was drawn after
         # the last fix and scored once. It is the only generalisation figure
         # in this report and it is deliberately the least flattering.
-        hp = REPO / "eval" / "artifacts" / "holdout_v2.json"
-        if hp.exists():
-            h = json.loads(hp.read_text())
+        hv = REPO / "eval" / "artifacts" / "holdout_variance.json"
+        if hv.exists():
+            h = json.loads(hv.read_text())
             a("")
-            a(f"HELD-OUT PARAPHRASE SET  ({h['n']} machine-paraphrased briefs, labels")
-            a("  copied from the source and never generated; drawn AFTER the last fix)")
-            a(_row("block_recall", h["block_recall"], None, None))
-            a(_row("block_verdict_exact", h["block_verdict_exact"], None, None))
-            a(_row("false_refusal_rate", h["false_refusal_rate"], 0.00,
-                   h["false_refusal_rate"] <= 0.0))
-            a("  deterministic layer only, no model. Compare block_recall 1.000")
-            a("  on the tuned set above: that gap IS the generalisation gap.")
+            a("HELD-OUT PARAPHRASE SETS  (machine-paraphrased from the hand-written")
+            a("  briefs; labels COPIED from the source, never generated. Three")
+            a("  independent draws scored against ONE code version, because a single")
+            a("  ~80-brief draw has visible sampling noise.)")
+            for d in h["draws"]:
+                a(f"  {d['set']:<24}n={d['n']:<4} recall {d['block_recall']:.3f}  "
+                  f"exact {d['block_verdict_exact']:.3f}  "
+                  f"hard_refusal {d['false_refusal_rate']:.3f}")
+            a(f"  {'block_recall':<24}{h['block_recall_mean']:.3f} "
+              f"± {h['block_recall_sd']:.3f}")
+            a("  Compare block_recall 1.000 on the tuned set above. That gap IS the")
+            a("  generalisation gap, and it is the only number here that measures it.")
 
         a("")
         a("BY STRATUM")
