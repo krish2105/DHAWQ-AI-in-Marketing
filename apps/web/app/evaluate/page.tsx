@@ -21,12 +21,9 @@ const SECTION: React.CSSProperties = {
 
 function Bar({ value, max, tone }: { value: number; max: number; tone: string }) {
   return (
-    <div style={{ background: "var(--surface)", blockSize: 4, borderRadius: 99, overflow: "hidden" }}>
-      <div style={{
-        inlineSize: `${Math.min(100, (value / max) * 100)}%`, blockSize: "100%",
-        background: tone, borderRadius: 99,
-        transition: "inline-size var(--dur-slow) var(--ease-out)",
-      }} />
+    <div className="bar-track">
+      <div className="bar-fill"
+           style={{ inlineSize: `${Math.min(100, (value / max) * 100)}%`, background: tone }} />
     </div>
   );
 }
@@ -124,12 +121,12 @@ export default function EvaluatePage() {
           </h2>
           <div style={{ display: "grid", gap: 6, maxInlineSize: 560 }}>
             {Object.entries(agent.by_stratum).map(([s, v]: any) => (
-              <div key={s} style={{ display: "grid", gridTemplateColumns: "180px 1fr 60px", gap: "var(--space-3)", alignItems: "center" }}>
-                <span style={{ fontSize: "var(--step--1)", color: "var(--text-muted)" }}>
+              <div key={s} className="row-bar">
+                <span className="row-label" style={{ color: "var(--text-muted)" }}>
                   {s.replace(/_/g, " ")}
                 </span>
                 <Bar value={v.passed} max={v.n} tone="var(--signal)" />
-                <span className="tnum" style={{ fontSize: "var(--step--1)", color: "var(--text-faint)" }}>
+                <span className="tnum" style={{ fontSize: "var(--step--1)", color: "var(--text-faint)", textAlign: "end" }}>
                   {v.passed}/{v.n}
                 </span>
               </div>
@@ -161,7 +158,7 @@ export default function EvaluatePage() {
       {recs && (
         <section style={{ marginBlockStart: "var(--space-8)" }}>
           <h2 style={SECTION}>The accuracy–coverage frontier</h2>
-          <div style={{ overflowX: "auto" }}>
+          <div className="scroll-x">
             <table style={{ inlineSize: "100%", borderCollapse: "collapse", minInlineSize: 660 }}>
               <thead>
                 <tr style={{ borderBlockEnd: "1px solid var(--hairline)" }}>

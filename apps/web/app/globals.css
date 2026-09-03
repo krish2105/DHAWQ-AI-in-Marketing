@@ -140,3 +140,51 @@ html, body {
   background: linear-gradient(90deg, transparent, var(--surface-raised), transparent);
   animation: shimmer 1.6s infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive rows.
+
+   Inline grid templates with fixed side columns collapse the flexible middle
+   on a phone: `160px 1fr 90px 90px` needs 376px of fixed width plus gaps, so
+   at 375px the bar it was meant to show got zero. Fixed columns have to shrink
+   with the viewport, which is a media query's job, not an inline style's.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.row-bar {
+  display: grid;
+  grid-template-columns: minmax(84px, 150px) 1fr minmax(56px, 84px);
+  gap: var(--space-3);
+  align-items: center;
+}
+.row-bar > .row-extra { display: none; }
+
+@media (min-width: 640px) {
+  .row-bar {
+    grid-template-columns: 160px 1fr 90px 72px;
+  }
+  .row-bar > .row-extra { display: block; }
+}
+
+.row-label {
+  font-size: var(--step--1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  background: var(--surface);
+  block-size: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+  min-inline-size: 40px;
+}
+.bar-fill {
+  block-size: 100%;
+  border-radius: 99px;
+  background: var(--signal);
+  transition: inline-size var(--dur-slow) var(--ease-out);
+}
+
+/* Wide content scrolls inside its own container; the page body never does. */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }

@@ -55,24 +55,17 @@ export default function SegmentsPage() {
         ) : (
           <div style={{ display: "grid", gap: 8, maxInlineSize: 720 }}>
             {rfm.segments.map((s: any) => (
-              <div key={s.segment} style={{
-                display: "grid", gridTemplateColumns: "160px 1fr 90px 90px",
-                gap: "var(--space-3)", alignItems: "center",
-              }}>
-                <span style={{ fontSize: "var(--step--1)" }}>
-                  {s.segment.replace(/_/g, " ")}
-                </span>
-                <div style={{ background: "var(--surface)", blockSize: 6, borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{
-                    inlineSize: `${(s.customers / maxSeg) * 100}%`, blockSize: "100%",
-                    background: "var(--signal)", borderRadius: 99,
-                    transition: "inline-size var(--dur-slow) var(--ease-out)",
-                  }} />
+              <div key={s.segment} className="row-bar">
+                <span className="row-label">{s.segment.replace(/_/g, " ")}</span>
+                <div className="bar-track">
+                  <div className="bar-fill"
+                       style={{ inlineSize: `${(s.customers / maxSeg) * 100}%` }} />
                 </div>
                 <span className="tnum" style={{ fontSize: "var(--step--1)", textAlign: "end" }}>
                   {s.customers.toLocaleString()}
                 </span>
-                <span className="tnum" style={{ fontSize: "var(--step--1)", textAlign: "end", color: "var(--text-faint)" }}
+                <span className="tnum row-extra"
+                      style={{ fontSize: "var(--step--1)", textAlign: "end", color: "var(--text-faint)" }}
                       title="mean shopping occasions">
                   {s.mean_frequency}×
                 </span>
