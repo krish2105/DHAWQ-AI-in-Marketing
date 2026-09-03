@@ -86,10 +86,24 @@ def extract_k(brief: str) -> int | None:
     m = _K_RE.search(brief)
     if m:
         return int(m.group(1))
+
+    # A NUMBER OF ITEMS IS NOT ALWAYS THE SLATE SIZE, and reading it as one
+    # refused a legitimate brief: "a ten-position grid for the loyal group,
+    # limiting each product category to three items maximum" was rejected as a
+    # 3-slot page. The 3 is a PER-CATEGORY cap; the slate size is ten. So the
+    # count is only the slate size when nothing nearby scopes it to a subset.
+    QUALIFIERS = {"each", "per", "every", "any", "single", "one",
+                  "category", "categor", "type", "colour", "color", "brand"}
+    SLATE_NOUN = ("slot", "slots", "item", "items", "position", "positions",
+                  "place", "places", "tile", "tiles")
     toks = acts.tokens(brief)          # tokens() maps number words to digits
     for i, t in enumerate(toks[:-1]):
-        if t.isdigit() and toks[i + 1] in ("slot", "slots", "item", "items"):
-            return int(t)
+        if not (t.isdigit() and toks[i + 1] in SLATE_NOUN):
+            continue
+        window = set(toks[max(0, i - 4):i]) | set(toks[i + 2:i + 4])
+        if window & QUALIFIERS:
+            continue                   # "three items maximum" PER CATEGORY
+        return int(t)
     return None
 
 
@@ -330,11 +344,32 @@ def triage(brief: str, provider=None, use_model: bool = True) -> Triage:
     #
     # The rules stay FIRST because they are 1.0 precise and reproducible. The
     # model only sees what they did not catch, and code still owns the decision.
+    # A MODEL MAY ESCALATE. IT MAY NOT REFUSE. Measured on the held-out
+    # paraphrase set, three ways:
+    #
+    #   deterministic only   recall 0.680   HARD refuse 0.000   escalate 0.000
+    #   model verdict kept   recall 0.940   HARD refuse 0.233   escalate 0.067
+    #   model -> escalate    recall 0.940   HARD refuse 0.000   escalate 0.300
+    #
+    # Taking the model's verdict as written buys 26 points of recall and kills
+    # one legitimate brief in four. Downgrading it to an escalation keeps every
+    # point of that recall and kills none — the work still happens, it just
+    # passes a human first. The cost is stated rather than hidden: three in ten
+    # legitimate briefs now need a click.
+    #
+    # It is also the only rule consistent with §0.1. A refusal has to cite a
+    # policy rule, and the model is deliberately not given rule ids to cite
+    # (see BriefIntent). Something that cannot ground a refusal must not issue
+    # one; it can raise a hand, which is what escalation is for.
     if use_model:
         intent = classify_intent(brief, provider)
         if intent is not None and intent.verdict != "proceed":
             return Triage(
-                intent.verdict, (intent.reason,), (),
+                "escalate",
+                (f"model flagged this as '{intent.verdict}': {intent.reason}",
+                 "escalated rather than refused — a model cannot cite a rule, "
+                 "so it cannot refuse; a human decides"),
+                (),
                 k=k, detected_injection=injected,
                 decided_by="model", confidence=intent.confidence,
             )

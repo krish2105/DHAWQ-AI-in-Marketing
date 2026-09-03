@@ -1,30 +1,44 @@
 [
   {
+    "id": "STD-06",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "escalate",
+    "error": null
+  },
+  {
+    "id": "STD-21",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "escalate",
+    "error": null
+  },
+  {
+    "id": "STD-23",
+    "stratum": "standard",
+    "expected": "slate",
+    "actual": "escalate",
+    "error": null
+  },
+  {
+    "id": "CLD-01",
+    "stratum": "cold_start",
+    "expected": "slate",
+    "actual": "escalate",
+    "error": null
+  },
+  {
     "id": "CLD-02",
     "stratum": "cold_start",
     "expected": "slate",
-    "actual": "refuse",
-    "error": null
-  },
-  {
-    "id": "CLD-04",
-    "stratum": "cold_start",
-    "expected": "slate",
-    "actual": "refuse",
-    "error": null
-  },
-  {
-    "id": "CLD-06",
-    "stratum": "cold_start",
-    "expected": "slate",
-    "actual": "refuse",
+    "actual": "escalate",
     "error": null
   },
   {
     "id": "CLD-08",
     "stratum": "cold_start",
     "expected": "slate",
-    "actual": "refuse",
+    "actual": "escalate",
     "error": null
   }
 ]

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -39,7 +40,12 @@ from services.api.agent.triage import triage          # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 SOURCE = REPO / "eval" / "golden" / "briefs_v1.yaml"
-OUT = REPO / "eval" / "golden" / "holdout_v1.yaml"
+#: Each run writes a NEW set. Re-scoring the same paraphrases after acting on
+#: their failures is how a held-out number quietly becomes a training number;
+#: a fresh draw is the only thing that keeps it honest, and at ~2s per brief it
+#: costs three minutes.
+SET_NAME = os.environ.get("DHAWQ_HOLDOUT_SET", "holdout_v1")
+OUT = REPO / "eval" / "golden" / f"{SET_NAME}.yaml"
 
 REWRITE = """You rewrite retail merchandising requests into different words.
 
@@ -142,7 +148,7 @@ def generate() -> None:
 
     total = len(src["briefs"])
     OUT.write_text(yaml.safe_dump({
-        "set": "holdout_v1",
+        "set": SET_NAME,
         "provenance": f"mechanical paraphrase of briefs_v1 by {WRITER_MODEL}",
         "labels": "copied from the source brief; never generated",
         "adequacy_check": f"{WRITER_MODEL}, separate call, drops drifted rewrites",
@@ -203,7 +209,7 @@ def score() -> int:
                   f"expected {b['expected_outcome']}, got {g}")
             print(f"      {b['brief'][:110]}")
 
-    (REPO / "eval" / "artifacts" / "holdout.json").write_text(json.dumps({
+    (REPO / "eval" / "artifacts" / f"{SET_NAME}.json").write_text(json.dumps({
         "n": len(rows), "block_recall": recall, "block_verdict_exact": exact,
         "false_refusal_rate": false_ref,
         "by_stratum": {k: {"pass": a, "n": n} for k, (a, n) in per_stratum.items()},

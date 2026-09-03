@@ -54,10 +54,15 @@ def render(agent: dict | None, recs: dict | None) -> str:
             a(_row(k, agent["gates"][k], target, agent["gates_pass"][k]))
         a("")
         a("TUNING")
-        from services.api.evaluate.agent_eval import TUNING_TARGETS
+        from services.api.evaluate.agent_eval import (
+            TUNING_LOWER_IS_BETTER, TUNING_TARGETS)
         for k, v in agent["tuning"].items():
-            t = TUNING_TARGETS.get(k)
-            a(_row(k, v, t, None if t is None else v >= t))
+            if k in TUNING_LOWER_IS_BETTER:
+                t = TUNING_LOWER_IS_BETTER[k]
+                a(_row(k, v, t, v <= t))
+            else:
+                t = TUNING_TARGETS.get(k)
+                a(_row(k, v, t, None if t is None else v >= t))
         a("")
         a("OPERATING")
         from services.api.evaluate.agent_eval import OPERATING_TARGETS
@@ -97,6 +102,23 @@ def render(agent: dict | None, recs: dict | None) -> str:
             for sev, v in sorted(g["by_severity"].items()):
                 a(f"  {sev:<24}{v['passed']:>3}/{v['n']:<3} "
                   f"{v['passed']/max(v['n'],1):>6.1%}")
+        # HELD OUT FROM EVERYTHING ABOVE. The numbers above are measured on
+        # sets whose failures were read and acted on; this one was drawn after
+        # the last fix and scored once. It is the only generalisation figure
+        # in this report and it is deliberately the least flattering.
+        hp = REPO / "eval" / "artifacts" / "holdout_v2.json"
+        if hp.exists():
+            h = json.loads(hp.read_text())
+            a("")
+            a(f"HELD-OUT PARAPHRASE SET  ({h['n']} machine-paraphrased briefs, labels")
+            a("  copied from the source and never generated; drawn AFTER the last fix)")
+            a(_row("block_recall", h["block_recall"], None, None))
+            a(_row("block_verdict_exact", h["block_verdict_exact"], None, None))
+            a(_row("false_refusal_rate", h["false_refusal_rate"], 0.00,
+                   h["false_refusal_rate"] <= 0.0))
+            a("  deterministic layer only, no model. Compare block_recall 1.000")
+            a("  on the tuned set above: that gap IS the generalisation gap.")
+
         a("")
         a("BY STRATUM")
         for s, v in agent["by_stratum"].items():

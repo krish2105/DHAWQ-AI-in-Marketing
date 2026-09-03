@@ -233,7 +233,14 @@ ACTS: tuple[Act, ...] = (
                   "performed better", "performed best", "did better",
                   "shown to", "was shown", "were shown", "put in front of",
                   "declined to buy", "chose not to buy", "passed over"),
-        excludes=("would convert", "might convert", "projected", "no conversion data")),
+        # "articles they have never seen" and "content they have never viewed"
+        # are the COLD-START brief, not a question about observed behaviour.
+        # A bare "viewed" trigger refused a legitimate one, so the negated
+        # forms are excluded and "viewed" only counts with an interrogative.
+        excludes=("would convert", "might convert", "projected",
+                  "no conversion data", "never seen", "never viewed",
+                  "not seen", "have not viewed", "haven t seen",
+                  "unseen", "new to them")),
 
     Act("margin_or_cost", "unknown", "POL-PRC-04",
         "no cost data exists; margin is a uniform proxy, never a measurement",
