@@ -19,20 +19,23 @@ for the executable plan.
 
 ### Deployment notes, stated rather than assumed
 
-The API runs in **light mode** on its free instance: the collaborative and
-hybrid arms are substituted with the content arm, because fitting implicit ALS
-over 119,594 x 13,548 does not fit in ~512MB. `/health` reports this, the
-substitution map and the reason.
+**The API fits nothing at request time.** It was OOM-killed on its first deploy:
+fitting a recommender cost 952MB peak against a 512MB instance, with 366MB of
+that being 119,033 x 768 customer profile vectors. Cohort candidates, RFM
+aggregates, the projected CLV distribution, the slot simulations and the
+catalogue facts are all computed by `pipelines/06_precompute_cohorts.py` on the
+full five-arm stack and read as 250KB of JSON.
 
-**No reported metric is affected.** The five-arm comparison is a build-time
-artefact computed on the full stack and shipped as JSON; `/evaluate` reads that
-file rather than recomputing it. What changes is only what the live demo serves
-when you press a button.
+    RSS after a full agent run:  952MB -> 105MB
+
+So the deployed service serves the **real hybrid's output**, not a substituted
+weaker arm. `/health` reports `serving: precomputed`.
 
 Render free web services sleep after inactivity, so the first request after a
-quiet period pays a cold start. Confirm the current free-tier terms before a
-grading window and budget a starter instance or a keep-warm ping if a cold
-start would be a problem.
+quiet period pays a cold start. The frontend distinguishes that from a real
+outage and offers a retry rather than rendering a parser error. Confirm the
+current free-tier terms before a grading window and budget a starter instance
+or a keep-warm ping if a cold start would be a problem.
 
 ---
 
