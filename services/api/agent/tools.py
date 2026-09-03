@@ -260,6 +260,43 @@ def _graph_traverse(args: GraphTraverseIn) -> GraphTraverseOut:
     )
 
 
+class HybridSearchIn(BaseModel):
+    query: str = Field(max_length=500)
+    corpus: Literal["B", "D"] = "D"
+    k: int = Field(default=8, ge=1, le=20)
+
+
+class HybridSearchOut(BaseModel):
+    hits: list[dict]
+    trust: str
+    wrapped: bool
+    injections_suspected: int
+
+
+def _hybrid_search(args: HybridSearchIn) -> HybridSearchOut:
+    """Retrieve over corpus D, WRAPPED as untrusted.
+
+    The wrapping happens here, at the boundary, not in whatever prompt happens
+    to consume the result. A retriever that returns raw external text and
+    trusts its caller to wrap it has already lost — the caller is the thing
+    most likely to forget.
+    """
+    from services.api.rag.hybrid import hybrid_search
+    from services.api.rag.untrusted import wrap
+
+    hits, suspected = [], 0
+    for h in hybrid_search(args.query, k=args.k):
+        w = wrap(h.doc.text, source=h.doc.source, url=h.doc.url)
+        suspected += w.neutralised_tags
+        hits.append({
+            "doc_id": h.doc.doc_id, "title": h.doc.title, "url": h.doc.url,
+            "score": round(h.score, 5), "content": w.text,
+            "bm25_rank": h.bm25_rank, "dense_rank": h.dense_rank,
+        })
+    return HybridSearchOut(hits=hits, trust="untrusted", wrapped=True,
+                           injections_suspected=suspected)
+
+
 def _load_policy(args: BaseModel) -> PolicyOut:
     import sys
     from pathlib import Path
@@ -325,6 +362,10 @@ register(ToolSpec("optimise_slots", "merchandiser", Scope.MERCH_SIMULATE, True, 
 register(ToolSpec("graph_traverse", "retriever", Scope.CORPUS_A_READ, True, 6,
                   GraphTraverseIn, GraphTraverseOut, _graph_traverse,
                   "Path query over the taxonomy graph. Returns the traversed path."))
+register(ToolSpec("hybrid_search", "retriever", Scope.CORPUS_D_READ, True, 4,
+                  HybridSearchIn, HybridSearchOut, _hybrid_search,
+                  "Hybrid BM25+dense over corpus D. Results are UNTRUSTED and "
+                  "wrapped at this boundary."))
 register(ToolSpec("load_policy", "critic", Scope.CORPUS_C_READ, True, 2,
                   CohortIn, PolicyOut, _load_policy,
                   "Load corpus C WHOLE. Not chunked, not retrieved."))

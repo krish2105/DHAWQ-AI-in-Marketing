@@ -1,0 +1,17 @@
+{
+  "pipeline": "corpus_d_v1",
+  "generated_at": "2026-09-03T11:40:15+05:30",
+  "git_rev": "6698cc9",
+  "python": "3.13.5",
+  "synthetic": true,
+  "crawl_date": "2026-09-03",
+  "n_documents": 100,
+  "planted_injections": 4,
+  "note": "SYNTHETIC. No network access was used. The crawler machinery in this file is real and tested, but \u00a713.5 requires a human decision on the allowlist before any fetch, and an unattended process cannot supply that.",
+  "limitation": "A synthetic corpus cannot tell you whether REAL pages contain attack classes nobody thought to write. Injection recall measured against it is a floor, exactly as it is against eval/redteam.",
+  "outputs": {
+    "snapshot_2026-09-03.json": {
+      "sha256": "9086f1f6368c66beac4e1007e438a4f6e3acc7e6701ddb0f434aa54893e94be6"
+    }
+  }
+}

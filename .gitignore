@@ -39,3 +39,7 @@ apps/web/node_modules/
 apps/web/tsconfig.tsbuildinfo
 eval/artifacts/*.json
 eval/failures/
+
+# corpus D snapshot is pinned and committed — results reproduce against IT,
+# not against the live web.
+!services/api/rag/corpora/external/

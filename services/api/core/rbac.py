@@ -64,7 +64,7 @@ _READ_BASE = {Scope.CATALOGUE_READ, Scope.RECS_READ, Scope.CORPUS_C_READ}
 # rules is worse than no critic, because it looks like one.
 _ANALYST = _READ_BASE | {
     Scope.EVAL_READ, Scope.SEGMENTS_READ_AGG,
-    Scope.CORPUS_A_READ, Scope.CORPUS_B_READ,
+    Scope.CORPUS_A_READ, Scope.CORPUS_B_READ, Scope.CORPUS_D_READ,
 }
 _MERCH = _ANALYST | {
     Scope.SEGMENTS_READ_INDIVIDUAL, Scope.MERCH_SIMULATE,
@@ -82,6 +82,13 @@ ROLE_SCOPES: Final[dict[Role, frozenset[Scope]]] = {
         _READ_BASE | {
             Scope.EVAL_READ, Scope.SEGMENTS_READ_AGG, Scope.MERCH_SIMULATE,
             Scope.CORPUS_A_READ, Scope.CORPUS_B_READ, Scope.CORPUS_C_READ,
+            # Corpus D IS reachable by the agent — §3 and §7.5 both put it on
+            # the Retriever. The containment is not denial of access: it is
+            # that the content arrives WRAPPED as untrusted, criterion 7 scans
+            # it, and the router default-denies the route unless the brief
+            # actually asked for market context. Withholding the scope would
+            # have made the four-corpus claim false while looking safer.
+            Scope.CORPUS_D_READ,
         }
     ),
 }
